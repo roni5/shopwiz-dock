@@ -1,0 +1,311 @@
+<?php
+
+/**
+ * @file
+ * Adds a new checkout pane to allow users to login, create an account or
+ * checkout anonymously depending on site configuration.
+ */
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function commerce_checkout_login_form_commerce_checkout_form_account_alter(&$form, &$form_state, $form_id) {
+  if (variable_get('commerce_checkout_login_allow_anonymous_checkout', TRUE)) {
+    // Set the name to guest to differentiate during validation.
+    $form['buttons']['continue']['#name'] = 'guest';
+    // Guest checkout does not need any validation.
+    $form['buttons']['continue']['#limit_validation_errors'] = array();
+    // Change the button label if the register/login form is shown.
+    if ($form_state['account']->uid === 0) {
+      $form['buttons']['continue']['#value'] = t('Checkout as guest');
+    }
+  }
+  else {
+    $form['buttons']['continue']['#access'] = FALSE;
+    unset($form['buttons']['cancel']['#prefix']);
+  }
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function commerce_checkout_login_form_commerce_checkout_form_checkout_alter(&$form, &$form_state, $form_id) {
+  // If user registration information has been submitted...
+  if (isset($form_state['order']->data['commerce_checkout_login_register'])) {
+    // And the pane has been configured to display account information...
+    if (variable_get('commerce_order_account_pane_auth_display', FALSE)) {
+      // Remove the 'login' form.
+      unset($form['account']['login']);
+      // Display account information.
+      $form['account'][] = ccl_account_information($form_state['order']);
+    }
+    else {
+      // Remove the account pane, because we already have the information.
+      unset($form['account']);
+    }
+  }
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function commerce_checkout_login_form_commerce_checkout_form_review_alter(&$form, &$form_state, $form_id) {
+  // If user registration information has been submitted...
+  if (isset($form_state['order']->data['commerce_checkout_login_register'])) {
+    // If the account review pane is shown.
+    if (isset($form['checkout_review']['review']['#data']['account'])) {
+      $content = ccl_account_information($form_state['order']);
+      $form['checkout_review']['review']['#data']['account']['data'] = render($content);
+    }
+  }
+}
+
+/**
+ * Implements hook_commerce_checkout_pane_info().
+ */
+function commerce_checkout_login_commerce_checkout_pane_info() {
+  global $user;
+
+  $panes['account_form'] = array(
+    'title' => $user->uid > 0 ? t('Account information') : t('Checkout method'),
+    'name' => t('Account'),
+    'page' => 'account',
+    'file' => 'commerce_checkout_login.panes.inc',
+    'callbacks' => array(
+      'settings_form' => 'commerce_checkout_login_account_settings_form',
+      'checkout_form' => 'commerce_checkout_login_account_form',
+      'checkout_form_validate' => 'commerce_checkout_login_account_form_validate',
+      'checkout_form_submit' => 'commerce_checkout_login_account_form_submit',
+    ),
+  );
+
+  return $panes;
+}
+
+/**
+ * Implements hook_commerce_checkout_page_info().
+ */
+function commerce_checkout_login_commerce_checkout_page_info() {
+  $pages['account'] = array(
+    'title' => t('Account'),
+    'weight' => -1,
+  );
+
+  return $pages;
+}
+
+/**
+ * Known user validation helper.
+ */
+function ccl_validate_existing_account(&$form, &$form_state, &$account) {
+  if ($user = user_uid_optional_load()) {
+    if ($user->uid === $account->uid) {
+      // Nothing to validate, the user is already logged in.
+      return TRUE;
+    }
+  }
+
+  // user_login_authenticate_validate() does a flood controlled authentication
+  // of the credentials based on a form submission. We therefor simulate a form
+  // submission to make use of existing code.
+  $credentials['values'] = array(
+    'pass' => $form_state['values']['account_form']['select']['login']['password'],
+    'name' => $account->name,
+    'mail' => $account->mail,
+  );
+  user_login_authenticate_validate(array(), $credentials);
+  // The uid is added to the credentials when validation is successful.
+  if (isset($credentials['uid']) && $credentials['uid']) {
+    // Clear past failures for this user so as not to block a user who might
+    // log in and out more than once in an hour.
+    if (isset($credentials['flood_control_user_identifier'])) {
+      flood_clear_event('failed_login_attempt_user', $credentials['flood_control_user_identifier']);
+    }
+    $form_state['commerce_checkout_login_uid'] = $credentials['uid'];
+    return TRUE;
+  }
+  else {
+    // Register events for flood control.
+    // Copied/adjusted from user_login_final_validate().
+
+    // Always register an IP-based failed login event.
+    flood_register_event('failed_login_attempt_ip', variable_get('user_failed_login_ip_window', 3600));
+    // Register a per-user failed login event.
+    if (isset($credentials['flood_control_user_identifier'])) {
+      flood_register_event('failed_login_attempt_user', variable_get('user_failed_login_user_window', 21600), $credentials['flood_control_user_identifier']);
+    }
+
+    if (isset($credentials['flood_control_triggered'])) {
+      if ($credentials['flood_control_triggered'] == 'user') {
+        form_set_error('account_form][select][login][name', format_plural(variable_get('user_failed_login_user_limit', 5), 'Sorry, there has been more than one failed login attempt for this account. It is temporarily blocked. Try again later or <a href="@url">request a new password</a>.', 'Sorry, there have been more than @count failed login attempts for this account. It is temporarily blocked. Try again later or <a href="@url">request a new password</a>.', array('@url' => url('user/password'))));
+      }
+      else {
+        // We did not find a uid, so the limit is IP-based.
+        form_set_error('account_form][select][login][name', t('Sorry, too many failed login attempts from your IP address. This IP address is temporarily blocked. Try again later or <a href="@url">request a new password</a>.', array('@url' => url('user/password'))));
+      }
+    }
+    else {
+      form_set_error('account_form][select][login][name', t('Sorry, unrecognized e-mail address or password. <a href="@password">Have you forgotten your password?</a>', array('@password' => url('user/password', array('query' => array('name' => $credentials['values']['mail']))))));
+      watchdog('commerce_checkout_login', 'Login attempt failed for %mail.', array('%mail' => $credentials['values']['mail']));
+    }
+  }
+
+  // Display an appropriate error message if the user account is blocked.
+  if (user_is_blocked($account->name)) {
+    form_set_error('account_form][select][login][email', t('The username %name has not been activated or is blocked.', array('%name' => $account->name)));
+    return FALSE;
+  }
+
+  return FALSE;
+}
+
+/**
+ * Implements hook_commerce_checkout_complete().
+ */
+function commerce_checkout_login_commerce_checkout_complete($order) {
+  if (ccl_current_user_is_anonymous() && !empty($order->data['commerce_checkout_login_register'])) {
+    $account = ccl_create_new_user_for($order);
+    ccl_dislay_password_reset_message($account);
+    ccl_new_account_notification($account);
+    ccl_login_convert_order($account->uid, $order);
+  }
+}
+
+/**
+ * @param $account
+ */
+function ccl_new_account_notification($account) {
+// Send a notification email and inform the user about it.
+  _user_mail_notify('register_no_approval_required', $account);
+  drupal_set_message(t('A welcome message with further instructions has been sent to your e-mail address.'));
+}
+
+/**
+ * @param $account
+ */
+function ccl_dislay_password_reset_message($account) {
+  $token = drupal_random_key();
+  $_SESSION['pass_reset_' . $account->uid] = $token;
+  $reset_link = l(t('Please set your password'), 'user/' . $account->uid . '/edit', array('query' => array('pass-reset-token' => $token)));
+  drupal_set_message(t('Your account has been created and you have been automatically logged in. !set_pass.', array('!set_pass' => $reset_link)));
+}
+
+/**
+ * @param stdClass $order
+ * @return \stdClass
+ */
+function ccl_create_new_user_for(stdClass $order) {
+  $username = $order->data['commerce_checkout_login_register']['username'];
+  $mail = $order->data['commerce_checkout_login_register']['mail'];
+  $account = commerce_checkout_create_account($username, $mail, user_password(), TRUE, TRUE);
+  return $account;
+}
+
+/**
+ * @return bool
+ */
+function ccl_current_user_is_anonymous() {
+  $user = user_uid_optional_load();
+  return $user && $user->uid == 0;
+}
+
+/**
+ * Converts an anonymous order to an authenticated order.
+ *
+ * @param $order
+ *   The anonymous order to convert to an authenticated order.
+ * @param $account
+ *   The user account the order will belong to.
+ * @return bool|\EntityMetadataWrapper
+ *   The updated order's wrapper or FALSE if the order was not converted,
+ *   meaning it was not an anonymous cart order to begin with.
+ */
+function ccl_order_convert($order, $account) {
+  // Only convert orders that are currently anonymous.
+  if ($order->uid == 0) {
+    // Update the uid and e-mail address to match the current account since
+    // there currently is no way to specify a custom e-mail address per order.
+    $order->uid = $account->uid;
+    $order->mail = $account->mail;
+
+    // Update the uid of any referenced customer profiles.
+    $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
+
+    foreach (field_info_instances('commerce_order', $order->type) as $field_name => $instance) {
+      $field_info = field_info_field($field_name);
+
+      if ($field_info['type'] == 'commerce_customer_profile_reference') {
+        if ($order_wrapper->{$field_name} instanceof EntityListWrapper) {
+          foreach ($order_wrapper->{$field_name} as $delta => $profile_wrapper) {
+            if ($profile_wrapper->uid->value() == 0) {
+              $profile_wrapper->uid = $account->uid;
+              $profile_wrapper->save();
+            }
+          }
+        }
+        elseif (!is_null($order_wrapper->{$field_name}->value()) &&
+          $order_wrapper->{$field_name}->uid->value() == 0
+        ) {
+          $order_wrapper->{$field_name}->uid = $account->uid;
+          $order_wrapper->{$field_name}->save();
+        }
+      }
+    }
+
+    // Allow other modules to operate on the converted order and then save.
+    module_invoke_all('ccl_order_convert', $order_wrapper, $account);
+    $order_wrapper->save();
+
+    return $order_wrapper;
+  }
+
+  return FALSE;
+}
+
+/**
+ * Login user and convert his/her anonymous order.
+ */
+function ccl_login_convert_order($uid, $order) {
+  global $user;
+  // If the user was logged in during this request, make sure we are using the
+  // full user object.
+  if ($user->uid) {
+    $user = user_load($user->uid);
+  }
+  else {
+    // Load the validated user into the global $user variable.
+    $user = user_load($uid);
+
+    // "Finalize" the login by triggering the appropriate system messages, IP
+    // address and login timestamp logging, and user login hook.
+    user_login_finalize();
+  }
+
+  // Convert the current order from anonymous to authenticated and clear out
+  // our variable from the form state.
+  if (empty($order->uid)) {
+    ccl_order_convert($order, $user);
+  }
+}
+
+/**
+ *
+ */
+function ccl_account_information($order) {
+  $content[] = array(
+    '#type' => 'item',
+    '#markup' => t('%checkout', array('%checkout' => t('Your account will be created after completing checkout.'))),
+  );
+  $content[] = array(
+    '#type' => 'item',
+    '#title' => t('Username'),
+    '#markup' => check_plain($order->data['commerce_checkout_login_register']['username']),
+  );
+  $content[] = array(
+    '#type' => 'item',
+    '#title' => t('E-mail address'),
+    '#markup' => check_plain($order->data['commerce_checkout_login_register']['mail']),
+  );
+
+  return $content;
+}

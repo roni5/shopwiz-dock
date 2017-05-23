@@ -1,0 +1,51 @@
+ #edit-line-item-fields-field-upload-file-und-0-upload-button {
+background: url ("https://webital.co.uk/profiles/commerce_kickstart/themes/webital/t-shirt.png") 12px 12px no-repeat;
+background-image: url(https://webital.co.uk/profiles/commerce_kickstart/themes/webital/t-shirt.svg) none repeat scroll 0 0    
+    //padding-left: 35px;
+    //padding-right: 15px;
+ }
+
+.form-type-commerce-fancy-attributes .description {
+    display: inline-flex;
+    margin:3%;
+}
+.form-type-commerce-fancy-attributes-ajax .form-item {
+    //width: 20px;
+    display: inline-block;
+       width:1.675em;
+}
+/*.form-type-commerce-fancy-attributes-ajax .description {
+    cursor: pointer;
+    display: block;
+   // margin-left: 0;
+      margin:3%;
+    float: left;
+}*/
+
+.commerce-fancy-attributes-color  {
+    //border: 1px solid #ccc;
+    border-radius: 0.5em;
+    box-shadow: 1px 1px 1px #fff;
+   //outline: medium outset #ccc; 0, 0%, 45%
+    //box-shadow: 0px 0px 0px 1px #249CE0 inset;
+    border: 2px solid   #249CE0;
+    padding-left: 1.6%;
+    margin:3%;
+    height: 1.675em;
+    width: 1.675em;
+}
+
+  .commerce-fancy-attributes-color:hover {
+        border: 1px solid #2a73a6;
+       // border-right: 1px solid #165899;
+       // border-bottom: 1px solid #07428f;
+        //border-left: 1px solid #165899;
+        -moz-box-shadow: inset 0 1px 0 0 #62b1e9;
+        -webkit-box-shadow: inset 0 1px 0 0 #62b1e9;
+        cursor: pointer;
+        -webkit-background-clip: padding-box;
+        transition: all 0.3s linear;
+}
+
+
+

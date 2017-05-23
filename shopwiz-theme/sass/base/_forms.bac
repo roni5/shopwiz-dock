@@ -1,0 +1,153 @@
+select,
+input,
+textarea {margin: 4.5%;}
+select,
+input,
+textarea {
+  &:focus {
+    @include box-shadow(0 0 4px 1px rgba(lighten($logo-straw, 15%), 0.3));
+    outline: 1px solid lighten($logo-straw, 15%);
+  }
+}
+
+fieldset {
+  margin-left: 0;
+  margin-right: 0;
+  padding: ($vert-spacing-unit / 2) $horz-spacing-unit $vert-spacing-unit $horz-spacing-unit;
+  border-color: $light-grey;
+}
+
+  #edit-line-item-fields-field-upload-file--3 , .form-wrapper {
+ // padding: 0 0.5em;
+  //color: $mid-grey;
+  border:0 none; 
+     outline: 0;
+}
+ #edit-line-item-fields-field-upload-file--3 ,  legend.form-wrapper {
+   span.fieldset-legend {
+ // padding: 0 0.5em;
+  //color: $mid-grey;
+  border:0 none;
+     outline: 0;
+     }
+ }
+ 
+ #edit-pass ul li > a {
+     padding-bottom:48px;
+     padding-top:32px;
+  }
+
+
+ /*@include breakpoint($desk, true) {
+#edit-name ,#edit-pass {
+  width: 320px;
+    }
+  }
+@include breakpoint($wide, true) {
+#edit-name ,#edit-pass {
+  width: 390px;
+   }
+ }*/
+
+
+.links--inline li > a {
+     padding-right:64px;    
+     padding-top:32px;
+  }
+
+   .node-readmore first > a  {
+     margin-right:1.2em;
+      padding-top:32px;
+  }
+ul.node-readmore first  > a {
+     margin-right:1.2em;
+      //padding-top:64px;
+}
+
+ #user-login-form , ul.user-login-form li > a  {
+      margin-bottom:1.2em;
+       padding-top:32px;
+         }
+ .form-item form-type-textfield form-item-name li > a  {
+      margin-bottom:1.2em;
+       padding-top:32px;
+         }
+
+
+      #user-login-form ,  ul.user-login-form , ul.form-text required li > a  {
+      margin-bottom:1em;
+       padding-top:32px;
+         }
+
+   #user-login-form ,  ul.user-login-form  li   {
+      margin-bottom:1.2em;
+       padding-top:32px;
+        padding-bottom:32px;   
+      }
+  #user-login-form ,  ul.user-login-form  li  a  {
+      margin-bottom:1em;
+       padding-top:32px;
+        padding-bottom:32px;
+      }
+
+
+     #user-login-form ,  ul.user-login-form ,ul.form-actions form-wrapper li > a  {
+      margin-bottom:1em;
+        padding-bottom:32px;
+      }
+     ul.form-actions form-wrapper li  {
+      margin-bottom:1.2em;
+       padding-top:32px;
+        padding-bottom:32px;
+      }
+
+    .l-region l-region--sidebar-second  {
+      #user-login-form ,ul.user-login-form li {
+      margin-bottom:1.2em;
+       padding-top:32px;
+        padding-bottom:32px;
+        li:first-child {
+    margin-top:24px;
+        }
+         }
+       }
+ .l-region l-region--sidebar-second  {
+                          ul li {
+      margin-bottom:1.2em;
+       padding-top:32px;
+        padding-bottom:32px;
+      }
+   }
+ #user-login-form ,  ul.user-login-form  li   {
+      margin-bottom:1.2em;
+       padding-top:32px;
+        padding-bottom:32px;
+      }
+
+   #edit-attributes-field-sizes ,
+  #edit-attributes-field-colors , .form-select  .form-item-attributes-field-colors  select{
+      height:2.3em;
+     width: 240px;
+   overflow: hidden;
+      margin-bottom:0.3em;
+       padding-top:5px;
+        padding-bottom:5px;
+}
+   .style-select  {
+   //background: url(http://i62.tinypic.com/2e3ybe1.jpg) no-repeat right center;
+ font-family: 'Glyphicons Halflings';
+  content: "\e114";
+  float: right;
+   height: 34px;
+   width: 240px;
+}
+
+   .first {
+  float:left;
+  width:45%;
+}
+.last {
+  float:right;
+  width:45%;
+}
+

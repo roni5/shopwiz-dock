@@ -1,0 +1,10 @@
+(function ($) {
+  Drupal.behaviors.dropdownHover = {
+    attach: function(context, settings) {
+      $('.js-activated').dropdownHover().dropdown();
+
+    });
+    }
+  };
+})(jQuery);
+

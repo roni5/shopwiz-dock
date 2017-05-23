@@ -1,0 +1,84 @@
+diff --git a/commerce_add_to_cart_confirmation.module b/commerce_add_to_cart_confirmation.module
+index e515727..b538ec7 100644
+--- a/commerce_add_to_cart_confirmation.module
++++ b/commerce_add_to_cart_confirmation.module
+@@ -39,14 +39,43 @@ function commerce_add_to_cart_confirmation_theme($existing, $type, $theme, $path
+ }
+ 
+ /**
++ * Return an array of settings to place in the JavaScript Drupal settings array
++ * when the Add to Cart Confirmation message is rendered.
++ */
++function commerce_add_to_cart_confirmation_js_settings() {
++  $settings = array(
++    'commerceAddToCartConfirmation' => array(
++      'overlayClass' => 'commerce_add_to_cart_confirmation_overlay',
++      'overlayParentSelector' => 'body',
++    ),
++  );
++
++  drupal_alter('commerce_add_to_cart_confirmation_js_settings', $settings);
++
++  return $settings;
++}
++
++/**
++ * Implements hook_js_alter().
++ *
++ * Adds settings to the Drupal.settings object needed by this module's JS.
++ */
++function commerce_add_to_cart_confirmation_js_alter(&$javascript) {
++  $javascript['settings']['data'][] = commerce_add_to_cart_confirmation_js_settings();
++}
++
++/**
+  * Theme function to render the confirmation message.
+  */
+ function theme_commerce_add_to_cart_confirmation_message($variables) {
++  // Build the message output.
++  // @todo Switch this to use a template.
+   $message = '<div class="added-product-title clearfix">' . t('Item successfully added to your cart') . '</div>';
+   $message .= '<div class="button-wrapper">';
+   $message .= '<div class="button checkout">' . l(t('Go to checkout'), 'cart') . '</div>';
+   $message .= '<div class="button continue"><span class="commerce-add-to-cart-confirmation-close">' . t('Continue shopping') . '</span></div>';
+   $message .= '</div>';
+   $message .= $variables['view'];
++
+   return '<div class="message-inner">' . $message . '<a class="commerce-add-to-cart-confirmation-close" href="#"><span class="element-invisible">' . t('Close') . '</span></a></div>';
+ }
+diff --git a/js/commerce_add_to_cart_confirmation.js b/js/commerce_add_to_cart_confirmation.js
+index f47b29e..9eed2d6 100644
+--- a/js/commerce_add_to_cart_confirmation.js
++++ b/js/commerce_add_to_cart_confirmation.js
+@@ -1,15 +1,29 @@
+ (function ($) {
+   Drupal.behaviors.commerce_add_to_cart_confirmation_overlay = {
+     attach:function (context, settings) {
++      var overlayClass = 'commerce_add_to_cart_confirmation_overlay';
++      var overlayParentSelector = 'body';
++
++      // Determine the appropriate overlay class and parent selector based on the settings array.
++      if (typeof settings.commerceAddToCartConfirmation != 'undefined') {
++        if (typeof settings.commerceAddToCartConfirmation.overlayClass != 'undefined') {
++          overlayClass = settings.commerceAddToCartConfirmation.overlayClass;
++        }
++
++        if (typeof settings.commerceAddToCartConfirmation.overlayParentSelector != 'undefined') {
++          overlayParentSelector = settings.commerceAddToCartConfirmation.overlayParentSelector;
++        }
++      }
++
+       if ($('.commerce-add-to-cart-confirmation').length > 0) {
+         // Add the background overlay.
+-        $('body').append('<div class="commerce_add_to_cart_confirmation_overlay"></div>');
++        $(overlayParentSelector).append('<div class="' + overlayClass + '"></div>');
+ 
+         // Enable the close link.
+         $('.commerce-add-to-cart-confirmation-close').live('click touchend', function(e) {
+           e.preventDefault();
+           $('.commerce-add-to-cart-confirmation').remove();
+-          $('.commerce_add_to_cart_confirmation_overlay').remove();
++          $('.' + overlayClass).remove();
+         });
+       }
+     }

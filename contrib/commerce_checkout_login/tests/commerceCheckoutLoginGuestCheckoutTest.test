@@ -1,0 +1,65 @@
+<?php
+
+/**
+ * @file
+ * Contains tests for the Guest checkout functionality.
+ */
+
+/**
+ * Guest checkout test class.
+ */
+class CommerceCheckoutLoginGuestCheckoutTest extends CommerceCheckoutLoginTestBase {
+
+  /**
+   * @return array
+   */
+  public static function getInfo() {
+    return array(
+      'name' => 'Commerce checkout login Guest checkout',
+      'description' => 'Ensure guests can checkout without having to register an account.',
+      'group' => 'Drupal Commerce (Checkout login)',
+    );
+  }
+
+  protected function testGuestCheckout() {
+    // Disable the account creation rule, since we want to make sure commerce
+    // checkout login does not create a new user during Guest checkout.
+    $this->disableRule('commerce_checkout_new_account');
+    $email = $this->generateEmail();
+
+    $this->startGuestCheckout();
+    $this->postGuestContactInformation($email);
+    $this->assertOnlyTheEmailAddressIsDisplayed($email);
+
+    $this->CompleteCheckout();
+    $this->assertCheckoutWasCompletedWithoutCreatingNewAccount();
+    $this->assertUserIsAnonymous();
+  }
+
+  protected function startGuestCheckout() {
+    $this->startCheckoutProcess();
+    $this->drupalPost(NULL, array(), t('Checkout as guest'));
+  }
+
+  /**
+   * @param string $email
+   */
+  protected function postGuestContactInformation($email) {
+    $edit = $this->generateAddressFormValues();
+    $edit['account[login][mail]'] = $email;
+    $this->postContinue($edit);
+  }
+
+  /**
+   * @param string $email
+   */
+  protected function assertOnlyTheEmailAddressIsDisplayed($email) {
+    $this->assertEmailAddressIsDisplayed($email);
+    $this->noUsernameInformationDisplayed();
+  }
+
+  protected function assertUserIsAnonymous() {
+    $this->assertFalse($this->userIsLoggedIn(), 'User is still anonymous');
+  }
+
+}

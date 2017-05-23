@@ -1,0 +1,12 @@
+name = Shipping pane
+description = Allows to expose Shipping pane on cart page.
+package = Commerce (Cart)
+core = 7.x
+dependencies[] = commerce_cp
+dependencies[] = commerce_shipping
+; Information added by Drupal.org packaging script on 2016-07-17
+version = "7.x-1.3"
+core = "7.x"
+project = "commerce_cp"
+datestamp = "1468772344"
+

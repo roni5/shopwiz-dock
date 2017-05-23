@@ -1,0 +1,108 @@
+<?php
+
+/**
+ * Implements hook_menu_alter().
+ */
+function commerce_cpc_menu_alter(&$items) {
+  // override coupon remove link
+  $items['commerce/coupons/order/remove/%commerce_coupon/%commerce_order']['page callback'] = 'commerce_cpc_remove_from_order_callback';
+}
+
+/**
+ * Implements hook_commerce_cp_info().
+ */
+function commerce_cpc_commerce_cp_info() {
+	$cart_panes = array();
+	$cart_panes['cart_coupon'] = array(
+    'name' => t('Coupon'),    
+    'pane callback' => 'commerce_cpc_coupon_pane',    
+    'page' => 'cart',
+  );
+
+  return $cart_panes;
+}
+
+/**
+ * Override commerce_coupon_remove_coupon_from_order_callback(). Invoke the 
+ * hook_commerce_cpc_coupon_detached hook after coupon was removed from order.
+ * 
+ * Page callback: remove coupon from order.
+ * 
+ * @param object $coupon
+ *   A coupon object.
+ * @param object $order
+ *   The order that the coupon belongs to.
+ *
+ * @return int|void
+ *   Access denied bit or void.
+ */
+function commerce_cpc_remove_from_order_callback($coupon, $order) {
+  if (!isset($_GET['token']) || !drupal_valid_token($_GET['token'], 'commerce_coupon_remove_checkout:' . $coupon->coupon_id . ':' . $order->order_id) || !commerce_checkout_access($order)) {
+    return MENU_ACCESS_DENIED;
+  }
+
+  commerce_coupon_remove_coupon_from_order($order, $coupon);  
+  // add posibility to react to detachment a coupon from an order 
+  module_invoke_all('commerce_cpc_coupon_detached', $order, $coupon); 
+  drupal_set_message(t('Coupon removed from order'));
+  drupal_goto();
+}
+
+/**
+ * Coupon cart pane callback
+ */
+function commerce_cpc_coupon_pane($form, $form_state, $cart_order, $pane_weight) {
+  $form_pane = array();
+
+  $form_pane['coupon'] = array(
+    '#type' => 'container',
+    '#weight' => $pane_weight,
+    '#prefix' => '<div class="commerce_coupon">',
+    '#suffix' => '</div>',
+  );
+  $form_pane['coupon']['coupon_code'] = array(
+    '#type' => 'textfield',   
+    '#title' => t('Coupon Code'),
+    '#description' => t('Enter your coupon code here.'), 
+    '#size' => 16,
+  );
+  $form_pane['coupon']['coupon_add'] = array(
+    '#type' => 'submit',
+    '#value' => t('Add coupon'),
+    '#submit' => array('commerce_cpc_coupon_add_form_submit'),
+  );
+  
+  // If there's at least one coupon has been attached to an order
+  if (isset($cart_order->commerce_coupons) && !empty($cart_order->commerce_coupons)) {    
+    // take a view table from commerce_coupon module
+    module_load_include('inc', 'commerce_coupon', 'includes/commerce_coupon.checkout_pane');
+    $table = commerce_coupon_pane_review(NULL, NULL, NULL, $cart_order);
+    $form_pane['coupon']['coupons_table'] = array(
+      '#type' => 'markup',
+      '#markup' => $table,      
+    );   
+  } 
+
+  return $form_pane;
+}
+
+/**
+ * Coupon form handler that is used on Cart form. Add coupon to order.
+ */
+function commerce_cpc_coupon_add_form_submit($form, &$form_state) {
+  $order = $form_state['order'];
+  $error = '';
+  if ($code = $form_state['values']['coupon_code']) {
+    if ($coupon = commerce_coupon_redeem_coupon_code($code, $order, $error)) {
+      // add posibility to react on attachment a coupon to an order            
+      module_invoke_all('commerce_cpc_coupon_attached', $order, $coupon);      
+      drupal_set_message(t('Coupon code applied'));
+    } else {
+      drupal_set_message($error, 'error');
+      return;
+    }
+  }
+
+  $form_state['no_redirect'] = FALSE;
+  return ;
+}

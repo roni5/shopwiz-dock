@@ -1,0 +1,14 @@
+name = Commerce Cart Pane
+description = Allows to add panes on cart form like shipping, coupons or custom panes
+package = Commerce (Cart)
+core = 7.x
+configure = admin/commerce/config/cart
+dependencies[] = commerce_cart
+
+
+; Information added by Drupal.org packaging script on 2016-07-17
+version = "7.x-1.3"
+core = "7.x"
+project = "commerce_cp"
+datestamp = "1468772344"
+

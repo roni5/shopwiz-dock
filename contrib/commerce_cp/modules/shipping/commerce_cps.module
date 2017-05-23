@@ -1,0 +1,237 @@
+<?php 
+
+/**
+ * Implements hook_commerce_cp_info().
+ */
+function commerce_cps_commerce_cp_info() {
+	$cart_panes = array();
+	$cart_panes['cart_shipping'] = array(
+    'name' => t('Shipping'),    
+    'pane callback' => 'commerce_cps_shipping_pane',    
+    'page' => 'cart',
+  );
+	
+  return $cart_panes;
+}
+
+/**
+ * Shipping cart pane callback
+ */
+function commerce_cps_shipping_pane($form, $form_state, $cart_order, $pane_weight) {
+  $form_pane = array();  
+  // Collect shipping rates for the order.
+  commerce_shipping_collect_rates($cart_order);
+  // Generate an array of shipping service rate options.
+  $options = commerce_shipping_service_rate_options($cart_order, $form_state);
+  $shipping_default = commerce_cps_get_order_shipping($cart_order);        
+
+  // check case when user visited Checkout page and came back to Cart page directly (without clicking Cancel button). In this case we have to drop order status to 'cart' as it's 'checkout_checkout' now and if user will click on 'Update cart' button it will be changed to 'cart' and shipping will be reseted as well. 
+  // So we have to check status and reset status and shipping manually
+  if ($cart_order->status == 'checkout_checkout') {
+    $cart_order->status = 'cart';      
+    commerce_cps_add_order_shipping($cart_order, $shipping_default);      
+  }    
+
+  $form_pane['shipping_method'] = array(
+    '#type' => 'radios',
+    '#title' => t('Shipping methods'),
+    '#options' => $options,
+    '#default_value' => $shipping_default,
+    '#ajax' => array(
+      'callback' => 'commerce_cps_shipping_ajax_refresh',        
+    ),
+    '#weight' => $pane_weight,
+  );
+  // we'll use order in ajax callback that will reload a cart page
+  $form_pane['order'] = array(
+    '#type' => 'value',
+    '#value' => $cart_order,
+  );
+  
+  return $form_pane;
+}
+
+/**
+ * AJAX Callback that is used on Cart form. 
+ * It saves picked shipping method into order and reloads a page.
+ */
+function commerce_cps_shipping_ajax_refresh($form, $form_state) {
+  ctools_include('ajax');
+  $shipping_method = $form_state['values']['shipping_method'];
+  $cart_order = $form_state['values']['order'];  
+  // attach chosen shipping method to cart order  
+  commerce_cps_add_order_shipping($cart_order, $shipping_method);
+  
+  $commands[] = ctools_ajax_command_reload();
+
+  print ajax_render($commands);
+  exit;
+}
+
+
+/**
+ * Next 5 hooks are responsible for shipping recalculation after 
+ * changing a cart content.
+ * hook_commerce_cart_product_add()
+ * hook_entity_update()
+ * hook_entity_delete()
+ * hook_commerce_cpc_coupon_attached()
+ * hook_commerce_cpc_coupon_detached()
+ */
+
+/**
+ * Implements hook_commerce_cart_product_add().
+ */
+function commerce_cps_commerce_cart_product_add($cart_order, 
+    $product, $quantity, $line_item) {
+  // recalculate shipping only if line item is just created 
+  // first time by comparing current quantity (usually = 1) 
+  // and line item quantity. If quantity > 1 (!= $quantity) 
+  // it means that product was added to cart before and line item 
+  // was updated. As we have scenario with updating line items 
+  // implements in hook_entity_update(). we have to avoid double 
+  // shipping recalculation here.
+  // Use cases:
+  // * on Product form after clicking on "Add to cart" button if product
+  // has not been added in the cart before.
+  if ($line_item->quantity == $quantity) {    
+    commerce_cps_add_order_shipping($cart_order);
+  }  
+}
+
+/**
+ * Implements hook_entity_update().
+ */
+function commerce_cps_entity_update($entity, $entity_type) {
+  // use this hook when line item has been updated. 
+  // Use cases:
+  // * on Cart form after changing Quantity and clicking 
+  // "Update cart" button
+  // * on Product form after clicking on "Add to cart" button if product
+  // already has been added in the cart.
+  if ($entity_type == 'commerce_line_item') {
+    $bundle = $entity->type;
+    $product_types = commerce_product_types();
+    $product_types = array_keys($product_types);
+
+    if (in_array($bundle, $product_types)) {
+      global $user;        
+      $cart_order = commerce_cart_order_load($user->uid);
+      commerce_cps_add_order_shipping($cart_order);
+    }
+  }  
+}
+
+/**
+ * Implements hook_entity_delete().
+ */
+function commerce_cps_entity_delete($entity, $type) {
+  // use this hook when line item has been deleted. 
+  // Use cases:
+  // * on Cart form after changing Quantity to 0 and clicking 
+  // "Update cart" button or by clicking on "Remove" button.  
+  if ($type == 'commerce_line_item') {      
+    $bundle = $entity->type;
+    $product_types = commerce_product_types();
+    $product_types = array_keys($product_types);
+    
+    if (in_array($bundle, $product_types)) {
+      global $user;        
+      $cart_order = commerce_cart_order_load($user->uid);
+      commerce_cps_add_order_shipping($cart_order);
+    }
+  }
+}
+
+/**
+ * Implements hook_commerce_cpc_coupon_attached().
+ */
+function commerce_cps_commerce_cpc_coupon_attached($order, $coupon) { 
+  // refresh order prices after attaching a coupon to an order
+  commerce_cart_order_refresh($order);
+	// recalculate shipping after coupon has been attached to order.
+	// Works only of Coupon pane module is activated.
+  commerce_cps_add_order_shipping($order);  
+}
+
+/**
+ * Implements hook_commerce_cpc_coupon_detached().
+ */
+function commerce_cps_commerce_cpc_coupon_detached($order, $coupon) {
+	// refresh order prices after detaching a coupon from an order
+  commerce_cart_order_refresh($order);
+  // recalculate shipping after coupon has been detached from order.
+	// Works only of Coupon pane module is activated.
+  commerce_cps_add_order_shipping($order);
+}
+
+/**
+ * Add shipping service to order. If no shipping service is passed 
+ * the current shipping service will be recalculated for order
+ * @param  [type] $order        
+ * @param  [type] $service_name              
+ */
+function commerce_cps_add_order_shipping($order, $service_name = NULL) {  
+  // if no shipping service is passed check if order has some 
+  // shipping service chosen  
+  if (empty($service_name)) {    
+    $service_name = commerce_cps_get_order_shipping($order);      
+    if (empty($service_name)) {      
+      return;
+    }
+  }  
+  // reload an order to void system error https://www.drupal.org/node/2275495
+  // It usually happens if user switches shipping on the cart after 14+ sec 
+  // after page was reloaded. Unclear issue - like some data in order has 
+  // been expired after 14+ sec..  
+  $order = commerce_order_load($order->order_id);      
+  // force shipping recalculation
+  if (isset($order->shipping_rates)) {
+    unset($order->shipping_rates);
+  }
+
+  // Make the chosen service available to the order.     
+  commerce_shipping_service_rate_order($service_name, $order);
+  if (!isset($service_name)) {    
+    if (empty($order->shipping_rates)) {      
+      // No available rate.
+      return;
+    }
+    $service_name = key($order->shipping_rates);    
+  }
+  
+  // Delete any existing shipping line items from the order.
+  commerce_shipping_delete_shipping_line_items($order, TRUE);  
+
+  // Extract the unit price from the calculated rate.
+  $rate_line_item = $order->shipping_rates[$service_name];
+  $rate_line_item_wrapper = entity_metadata_wrapper('commerce_line_item', $rate_line_item);
+
+  $unit_price = $rate_line_item_wrapper->commerce_unit_price->value();
+
+  // Create a new shipping line item with the calculated rate from the form.
+  $line_item = commerce_shipping_line_item_new($service_name, $unit_price, $order->order_id, $rate_line_item->data, $rate_line_item->type);
+
+  // Save and add the line item to the order.
+  $new_line_item = commerce_shipping_add_shipping_line_item($line_item, $order, TRUE);
+  commerce_order_save($order);
+
+  return $order;
+}
+
+/**
+ * Get shipping service by order. 
+ * Returns FALSE if no shipping is setup.
+ */
+function commerce_cps_get_order_shipping($order) {
+  $default_value = FALSE;
+  $order_wrapper = entity_metadata_wrapper('commerce_order', $order);  
+  foreach ($order_wrapper->commerce_line_items as $delta => $line_item_wrapper) {    
+    if ($line_item_wrapper->value() && $line_item_wrapper->type->value() == 'shipping') {      
+      $default_value = $line_item_wrapper->commerce_shipping_service->value();
+      break;
+    }
+  }
+
+  return $default_value;
+}

@@ -1,0 +1,19 @@
+
+(function($) {
+       Drupal.behaviors.buttonFont = {
+         attach: function(context, settings){
+          $("#texteditor").once("seFont", function(e) {
+             //seFont(font);
+             $(this).change(function() {
+              alert("you clicked ");
+             //$(this).siblings("#texteditor").children("li a").removeClass().addClass($(this).val());
+        });         
+
+	      //}
+            //alert("you clicked ");
+});
+
+          }
+        };
+    })(jQuery);
+

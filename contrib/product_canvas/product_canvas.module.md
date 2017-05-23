@@ -1,0 +1,420 @@
+<?php
+
+/**
+ * @file
+ * Implementation of Entity Product Canvas.
+ */
+
+/**
+ * Implements hook_entity_info().
+ */
+function product_canvas_entity_info() {
+  $return['product_canvas'] = array(
+    'label' => t('Product Canvas'),
+    // The entity class and controller class extend the default entity classes.
+    'entity class' => 'ProductCanvas',
+    'controller class' => 'ProductCanvasController',
+    'base table' => 'product_canvas',
+    'fieldable' => TRUE,
+    'exportable' => TRUE,
+    'entity keys' => array(
+      'id' => 'product_canvas_id',
+      'bundle' => 'type',
+    ),
+    // Bundles are defined by the types below.
+    'bundles' => array(),
+    'bundle keys' => array('bundle' => 'type'),
+    'label callback' => 'product_canvas_label',
+    'uri callback' => 'entity_class_uri',
+    'access callback' => 'product_canvas_access',
+    'module' => 'product_canvas',
+    // The information below is used by the Controller;
+    // which extends the EntityDefaultUIController.
+    'admin ui' => array(
+      'path' => 'admin/content/product_canvas',
+      'file' => 'includes/product_canvas.admin.inc',
+      'controller class' => 'ProductCanvasUIController',
+      'menu wildcard' => '%product_canvas',
+    ),
+  );
+  // The entity that holds information about the entity types.
+  $return['product_canvas_type'] = array(
+    'label' => t('Product Canvas Type'),
+    'entity class' => 'ProductCanvasType',
+    'controller class' => 'ProductCanvasTypeController',
+    'base table' => 'product_canvas_type',
+    'fieldable' => FALSE,
+    'bundle of' => 'product_canvas',
+    'exportable' => TRUE,
+    'entity keys' => array(
+      'id' => 'id',
+      'name' => 'type',
+      'label' => 'label',
+    ),
+    'access callback' => 'product_canvas_type_access',
+    'module' => 'product_canvas',
+    // Enable the entity API's admin UI.
+    'admin ui' => array(
+      'path' => 'admin/structure/product_canvas_types',
+      'file' => 'includes/product_canvas_type.admin.inc',
+      'controller class' => 'ProductCanvasTypeUIController',
+    ),
+  );
+
+  return $return;
+}
+
+/**
+ * Implements hook_entity_info_alter().
+ */
+function product_canvas_entity_info_alter(&$entity_info) {
+  foreach (product_canvas_get_types() as $type => $info) {
+    $entity_info['product_canvas']['bundles'][$type] = array(
+      'label' => $info->label,
+      'admin' => array(
+        'path' => 'admin/structure/product_canvas_types/manage/%product_canvas_type',
+        'real path' => 'admin/structure/product_canvas_types/manage/' . $type,
+        'bundle argument' => 4,
+        'access arguments' => array('administer product canvas types'),
+      ),
+    );
+  }
+}
+
+/**
+ * Implements hook_permission().
+ */
+function product_canvas_permission() {
+  // We set up permisssions to manage entity types, manage all entities and the
+  // permissions for each individual entity.
+  $permissions = array(
+    'administer product canvas types' => array(
+      'title' => t('Administer Product Canvas types'),
+      'description' => t('Create and delete fields for Product Canvas types, and set their permissions.'),
+    ),
+    'administer product canvas' => array(
+      'title' => t('Administer Product Canvas'),
+      'description' => t('Edit and delete all Product Canvas'),
+    ),
+  );
+
+  // Generate permissions.
+  foreach (product_canvas_get_types() as $type) {
+    $type_name = check_plain($type->type);
+    $permissions += array(
+      "edit any $type_name product canvas" => array(
+        'title' => t('%type_name: Edit any Product Canvas', array('%type_name' => $type->label)),
+      ),
+      "view any $type_name product canvas" => array(
+        'title' => t('%type_name: View any Product Canvas', array('%type_name' => $type->label)),
+      ),
+    );
+  }
+
+  return $permissions;
+}
+
+/** 
+ * Implements hook_theme().
+ */
+function product_canvas_theme() {
+  return array(
+   'product_canvas' => array(
+       'render element' => 'elements',
+       'template' => 'product_canvas',
+    ),
+  );
+}
+
+/**
+ * Implements hook_menu_local_tasks_alter().
+ */
+function product_canvas_menu_local_tasks_alter(&$data, $router_item, $root_path) {
+  // Add action link 'admin/structure/product_canvas/add'
+  // on 'admin/structure/product_canvas'.
+  if ($root_path == 'admin/content/product_canvas') {
+    $item = menu_get_item('admin/content/product_canvas/add');
+    if ($item['access']) {
+      $data['actions']['output'][] = array(
+        '#theme' => 'menu_local_action',
+        '#link' => $item,
+      );
+    }
+  }
+}
+
+/**
+ * Determines whether the given user has access to a Product Canvas.
+ *
+ * @param string $op
+ *   The operation being performed. One of 'view', 'update', 'create', 'delete'
+ *   or just 'edit' (being the same as 'create' or 'update').
+ *
+ * @param object $entity
+ *   Optionally a Product Canvas or a Product Canvas type to check access for.
+ *   If nothing is given, access for all Product Canvas is determined.
+ *
+ * @param object $account
+ *   The user to check for. Leave it to NULL to check for the global user.
+ *
+ * @return bool
+ *   Whether access is allowed or not.
+ */
+function product_canvas_access($op, $entity = NULL, $account = NULL) {
+  if (user_access('administer product canvas', $account)) {
+    return TRUE;
+  }
+
+  if (isset($entity) && $type_name = $entity->type) {
+    $op = ($op == 'view') ? 'view' : 'edit';
+    if (user_access("$op any $type_name product canvas", $account)) {
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
+
+/**
+ * Entity label callback.
+ */
+function product_canvas_label($entity, $entity_type) {
+  return empty($entity) ? t('New Product Canvas') : $entity->label;
+}
+
+/**
+ * Access callback for the entity API.
+ */
+function product_canvas_type_access($op, $type = NULL, $account = NULL) {
+  return user_access('administer product canvas types', $account);
+}
+
+/**
+ * Gets an array of all Product Canvas types, keyed by the type name.
+ *
+ * @param string $type_name
+ *   If set, the type with the given name is returned.
+ *
+ * @return array
+ *   Depending whether $type isset, an array of Product Canvas types
+ *   or a single one.
+ */
+function product_canvas_get_types($type_name = NULL) {
+  // entity_load will get the Entity controller for our Product Canvas entity
+  // and call the load function of that object.
+  // We are loading entities by name here.
+  $types = entity_load_multiple_by_name('product_canvas_type', isset($type_name) ? array($type_name) : FALSE);
+
+  return isset($type_name) ? reset($types) : $types;
+}
+
+/**
+ * Menu argument loader; Load a Product Canvas type by string.
+ *
+ * @param string $type
+ *   The machine-readable name of a Product Canvas type to load.
+ *
+ * @return mixed
+ *   A Product Canvas type array or FALSE if $type does not exist.
+ */
+function product_canvas_type_load($type) {
+  return product_canvas_get_types($type);
+}
+
+/**
+ * Fetch a Product Canvas object.
+ *
+ * @param int $product_canvas_id
+ *   Integer specifying the product_canvas id.
+ *
+ * @return object
+ *   A fully-loaded object or FALSE if it cannot be loaded.
+ *
+ * @see entity_load_single()
+ */
+function product_canvas_load($product_canvas_id) {
+  return entity_load_single('product_canvas', $product_canvas_id);
+}
+
+/**
+ * Load multiple Product Canvas based on certain conditions.
+ *
+ * @param array $product_canvas_ids
+ *   An array of Product Canvas IDs.
+ *
+ * @param array $conditions
+ *   An array of conditions to match against the product_canvas table.
+ *
+ * @param bool $reset
+ *   A boolean indicating that the internal cache should be reset.
+ *
+ * @return array
+ *   An array of objects, indexed by product_canvas_id.
+ *
+ * @see entity_load()
+ * @see product_canvas_load()
+ */
+function product_canvas_load_multiple($product_canvas_ids = array(), $conditions = array(), $reset = FALSE) {
+  return entity_load('product_canvas', $product_canvas_ids, $conditions, $reset);
+}
+
+/**
+ * Deletes a Product Canvas.
+ */
+function product_canvas_delete(ProductCanvas $product_canvas) {
+  $product_canvas->delete();
+}
+
+/**
+ * Delete multiple Product Canvas.
+ *
+ * @param array $product_canvas_ids
+ *   An array of Product Canvas IDs.
+ */
+function product_canvas_delete_multiple(array $product_canvas_ids) {
+  return entity_delete_multiple('product_canvas', $product_canvas_ids);
+}
+
+/**
+ * Create a Product Canvas object.
+ */
+function product_canvas_create($values = array()) {
+  return entity_create('product_canvas', $values);
+}
+
+/**
+ * Saves a Product Canvas to the database.
+ *
+ * @param string $product_canvas
+ *   The Product Canvas object.
+ */
+function product_canvas_save($product_canvas) {
+  return entity_save('product_canvas', $product_canvas);
+}
+
+/**
+ * Saves a Product Canvas type to the db.
+ */
+function product_canvas_type_save($type) {
+  return entity_save('product_canvas_type', $type);
+}
+
+/**
+ * Deletes a Product Canvas type from the db.
+ */
+function product_canvas_type_delete(ProductCanvasType $type) {
+  $type->delete();
+}
+
+/**
+ * Menu title callback for showing individual entities.
+ */
+function product_canvas_page_title(ProductCanvas $product_canvas) {
+  return $product_canvas->label;
+}
+
+function commerce_product_canvas_get_library() {
+
+ $path = FALSE;
+
+  if (function_exists('libraries_get_path')) {
+    $path = libraries_get_path('commerce_product_canvas') . 'fabric.min.js';
+    if (!file_exists($path)) {
+      $path = libraries_get_path('commerce_product_canvas') . 'fabric.js';
+    }
+    elseif (!file_exists($path)) {
+      $path = FALSE;
+    }
+  }
+  elseif (file_exists('sites/all/libraries/fabric/fabric.min.js')) {
+    $path = 'sites/all/libraries/fabric/fabric.min.js';
+  }
+  elseif (file_exists('sites/all/libraries/fabric/fabric.js')) {
+    $path = 'sites/all/libraries/fabric/fabric.js';
+  }
+
+  return $path;
+}
+
+/**
+*
+*function product_canvas_form() {
+*    $form = array();
+*    $form['save_button'] = array(
+*      '#type' => 'button',
+*      '#value' => 'save Design',
+*      '#attached' => array(
+*        'js' => drupal_get_path('module', 'product_canvas') . '/js/product_canvas_save.js'
+*      ),
+*    );
+*    return $form;
+*}
+ */
+ 
+/**
+ * Sets up content to show an individual Product Canvas.
+ */
+
+function product_canvas_page_view($product_canvas, $view_mode = 'full') {
+
+drupal_add_css(drupal_get_path('module', 'product_canvas') . '/css/bootstrap.min.css', array('group' => CSS_DEFAULT, 'every_page' => FALSE));
+drupal_add_css(drupal_get_path('module', 'product_canvas') . '/css/canvas.css', array('group' => CSS_DEFAULT, 'every_page' => FALSE));
+
+drupal_add_css(drupal_get_path('module', 'product_canvas') . '/css/commerce_product_canvas.css', array('group' => CSS_DEFAULT, 'every_page' => FALSE));
+ drupal_add_js(drupal_get_path('module', 'product_canvas') . '/js/product_canvas_save.js', 'file');
+ drupal_add_js(drupal_get_path('module', 'product_canvas') . '/js/tshirtEditor.js', 'file');
+   //drupal_add_css(drupal_get_path('module', 'product_canvas') . '/css/commerce_product_canvas.css');
+  //drupal_add_css(drupal_get_path('module', 'product_canvas') . '/css/jquery.miniColors.css');
+   drupal_add_js($path, array('scope' => 'footer'));
+     //$entity_type = $entity->entityType();
+      $product_canvas_type = $product_canvas->entityType();
+      $product_canvas_id = entity_id($product_canvas_type,$product_canvas);
+   //$entity_id = entity_id($entity_type, $entity);
+   //$entity->content = array();
+       $product_canvas->content = array();
+       $product_canvas->label = filter_xss($product_canvas->label);
+       //print theme_image( array( 
+ //'path' => 'public://image_example_images/crew_front.png', 
+ //'attributes' => array('class' => 'page', 'id'  => 'tshirtFacing','style' => 'border:1px solid #aaa;') ));
+         global $base_url;
+         $path =  drupal_get_path('module', 'product_canvas') . '/img/crew_front.png';
+         $uri = file_build_uri($path);
+   //file_default_scheme() . '://image_example_images/crew_front.png'
+   $image = theme( 'image_style',
+  array(   
+    'path' => $uri,
+    //'path' => 'public://my_example_image.jpg',
+    'style_name' =>  'tshirt',
+    'alt' => 'creat a Tshirt',
+    'title' => 'create',
+  )
+);
+
+     //$product_canvas['content'] = drupal_get_form('product_canvas_form');
+        //$build = array();
+            //$build[] =  array(
+    //'#markup' => '<button type="button" id="product_canvas_save"><span>Save Design</span></button>',
+//);
+        //$build[] = drupal_get_form('product_canvas_form');  
+        //return $build;    
+
+    // Build the fields content
+    // field_attach_prepare_view($product_canvas_type, array($product_canvas_id => $product_canvas), $view_mode);
+    //entity_prepare_view($product_canvas_type, array($product_canvas_id => $product_canvas));
+  
+    //$product_canvas->content += field_attach_view($product_canvas_type, $product_canvas, $view_mode);
+
+       $product_canvas->content += array(
+      '#theme'     => $product_canvas_type,    
+      '#element'   => $product_canvas,
+      '#view_mode' => $view_mode,
+      '#language'  => LANGUAGE_NONE,
+
+  );
+
+    //drupal_alter(array('product_canvas', 'entity_view'), $content, $type);
+   return entity_view('product_canvas_type', array($product_canvas), $view_mode);
+      //return $product_canvas->content;
+      //return $content;
+  }
+ 

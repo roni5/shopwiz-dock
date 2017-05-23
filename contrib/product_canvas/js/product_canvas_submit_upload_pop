@@ -1,0 +1,56 @@
+(function ($) {
+        var offsetY = -20; 
+        var offsetX = 40;
+
+    Drupal.behaviors.product_canvas = {
+        attach: function (context, settings) {
+       $('.file').hover(function (e) {
+            // Begin mouseover function
+
+            // Grab the p tag with the id of 'dbInfo' in order
+            // to retrieve information from it later
+            var $dbInfo = $('#dbInfo');
+
+            // Create a variable that will hold the HTML
+            // for the pop up. However, this is not the best
+            // way dynamically create the popup. You should
+            // look into jQuery templating.
+            var html = '<div id="info">';
+            html += '<h4>Info here</h4>';
+            html += '<p>' + $dbInfo.text() + '</p>';
+            html += '</div>';
+
+            // Append the variable to the body and the select
+            // itself and its children and hide them, so you
+            // can then add a fadeIn effect.
+            $('body')
+                .append(html)
+                    .children('#info')
+                    .hide()
+                    .fadeIn(400);
+
+            // This is where the popup offesets away from your cursor
+            // The variables set up top will decide how far away the
+            // pop up strays away from your cursor.
+            $('#info')
+                .css('top', e.pageY + offsetY)
+                .css('left', e.pageX + offsetX);
+
+        }, function () {
+            // Begin mouseout function
+
+            // Remove on mouse out
+            $('#info').remove();
+        });
+
+        // Whenever the mouse moves the popup will follow using
+        // the offsets set up top.
+        $('.file').mousemove(function (e) {
+            $('#info')
+                .css('top', e.pageY + offsetY)
+                .css('left', e.pageX + offsetX);
+        });
+
+        }
+    };
+})(jQuery);

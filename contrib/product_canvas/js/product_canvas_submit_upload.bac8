@@ -1,0 +1,19 @@
+(function ($) {
+  Drupal.behaviors.submitUpload = {
+    attach: function(context, settings) {
+       $('input[type="submit"]:last', context).hide();
+           $('input[type="submit"]:last', context).change(function() {
+        //$parent = $(this).closest('#edit-submit');
+        //setTimeout to allow for validation
+        //would prefer an event, but there isn't one
+        setTimeout(function() {
+          //if(!$('.error', $parent).length) {
+           //$(this).next('input[type="submit"]').mousedown();
+           $('input[type="submit"]:last').delay(999).mousedown();
+          //}
+        }
+     //);
+      });
+    }
+  };
+})(jQuery);

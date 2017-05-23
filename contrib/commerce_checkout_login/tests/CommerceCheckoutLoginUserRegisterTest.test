@@ -1,0 +1,202 @@
+<?php
+
+/**
+ * Checkout register test class.
+ */
+class CommerceCheckoutLoginUserRegisterTest extends CommerceCheckoutLoginTestBase{
+
+  /**
+   * @return array
+   */
+  public static function getInfo() {
+    return array(
+      'name' => 'Commerce checkout login User register',
+      'description' => 'Ensure users can register a new account during checkout.',
+      'group' => 'Drupal Commerce (Checkout login)',
+    );
+  }
+
+  public function setUp() {
+    parent::setUp();
+    $this->startCheckoutProcess();
+  }
+
+  public function testInvalidEmailAddressIsRejected() {
+    $mail = 'invalid e-mail address';
+    $this->submitRegisterForm($this->randomName(), $mail);
+
+    $this->assertInvalidEmailMessageDisplayed($mail);
+  }
+
+  public function testDoubleEmailEntryValidation() {
+    $this->startCheckoutProcessWithDoubleMailEntry();
+
+    $mail = $this->generateEmail();
+    $this->submitRegisterFormWithConfirmedEmail($this->randomName(), $mail, $mail);
+
+    $this->assertNoRaw(t('The specified e-mail addresses do not match.'));
+  }
+
+  public function testDoubleEmailEntryValidationFails() {
+    $this->startCheckoutProcessWithDoubleMailEntry();
+
+    $this->submitRegisterFormWithConfirmedEmail($this->randomName(), $this->generateEmail(), $this->generateEmail());
+
+    $this->assertRaw(t('The specified e-mail addresses do not match.'));
+  }
+
+  public function testExistingUsernameIsDenied() {
+    $this->submitRegisterForm($this->storeCustomerAccount->name, $this->generateEmail());
+
+    $this->assertUsernameTakenMessageIsDisplayed($this->storeCustomerAccount->name);
+  }
+
+  public function testNoUsernameInformationLeakedWhenNoEmailAddressIsEntered() {
+    $this->submitRegisterForm($this->randomName(), '');
+
+    $this->assertRaw(t('E-mail address field is required.'));
+    $this->assertNoUsernameTakenMessageIsDisplayed('admin');
+  }
+
+  public function testExistingEmailAddressIsDenied() {
+    $mail = $this->storeCustomerAccount->mail;
+    $this->submitRegisterForm($this->randomName(), $mail);
+    $this->assertEmailAddressAlreadyRegisteredMessageDisplayed($mail);
+  }
+
+  public function testNoEmailInformationLeakedWhenNoUsernameIsEntered() {
+    $mail = $this->storeCustomerAccount->mail;
+    $this->submitRegisterForm('', $mail);
+
+    $this->assertNoEmailAddressAlreadyRegisteredMessageDisplayed($mail);
+    $this->assertRaw(t('Username field is required.'));
+  }
+
+  public function testSuccessFullRegistrationAndCheckout() {
+    $userToRegister = $this->getValidUserToRegister();
+
+    $this->submitRegisterForm($userToRegister->name, $userToRegister->mail);
+    $this->continueToReview($userToRegister);
+    $this->assertNoNewAccountCreated();
+
+    $this->CompleteCheckout();
+    $this->assertCheckoutCompletedWithNewAccount();
+  }
+
+  protected function testAccountInformationPaneCanBeEnabled() {
+    $this->enableAccountInformationPane();
+    $userToRegister = $this->getValidUserToRegister();
+
+    $this->submitRegisterForm($userToRegister->name, $userToRegister->mail);
+
+    $this->assertAccountInformationIsDisplayedWithLabel($userToRegister);
+  }
+
+  protected function testAccountInformationPaneCanBeDisabled() {
+    $this->disableAccountInformationPane();
+    $userToRegister = $this->getValidUserToRegister();
+
+    $this->submitRegisterForm($userToRegister->name, $userToRegister->mail);
+
+    $this->assertNoAccountInformationDisplayed();
+  }
+
+  protected function testNoUserCreatedIfUserLoggedInWhileRegistering() {
+    $userToRegister = $this->getValidUserToRegister();
+    $this->submitRegisterForm($userToRegister->name, $userToRegister->mail);
+
+    $current_url = $this->getUrl();
+    $this->drupalLogin($this->storeCustomerAccount);
+    $this->drupalGet($current_url);
+
+    $this->continueToReview($userToRegister);
+    $this->CompleteCheckout();
+    $this->assertNoNewAccountCreated();
+  }
+
+  /**
+   * @param string $user_name
+   * @param string $email
+   */
+  protected function submitRegisterForm($user_name, $email) {
+    $edit = array(
+      'account_form[select][register][username]' => $user_name,
+      'account_form[select][register][mail]' => $email,
+    );
+    $this->drupalPost(NULL, $edit, t('Register & checkout'));
+  }
+
+  protected function startCheckoutProcessWithDoubleMailEntry() {
+    $this->enableDoubleEmailEntry();
+    $this->startCheckoutProcess();
+  }
+
+  protected function enableDoubleEmailEntry() {
+    variable_set('commerce_order_account_pane_mail_double_entry', TRUE);
+  }
+
+  /**
+   * @param string $user_name
+   * @param string $email
+   * @param string $email_confirm
+   */
+  protected function submitRegisterFormWithConfirmedEmail($user_name, $email, $email_confirm) {
+    $edit = array(
+      'account_form[select][register][username]' => $user_name,
+      'account_form[select][register][mail]' => $email,
+      'account_form[select][register][mail_confirm]' => $email_confirm,
+    );
+    $this->drupalPost(NULL, $edit, t('Register & checkout'));
+  }
+
+  /**
+   * @param $name
+   */
+  protected function assertUsernameTakenMessageIsDisplayed($name) {
+    $this->assertRaw(t('The name %name is already taken.', array('%name' => $name)));
+  }
+
+  /**
+   * @param $name
+   */
+  protected function assertNoUsernameTakenMessageIsDisplayed($name) {
+    $this->assertNoRaw(t('The name %name is already taken.', array('%name' => $name)));
+  }
+
+  /**
+   * @param $mail
+   */
+  protected function assertEmailAddressAlreadyRegisteredMessageDisplayed($mail) {
+    $this->assertRaw(t('The e-mail address %email is already registered. <a href="@password">Have you forgotten your password?</a>', array(
+      '%email' => $mail,
+      '@password' => url('user/password')
+    )));
+  }
+
+  /**
+   * @param $mail
+   */
+  protected function assertNoEmailAddressAlreadyRegisteredMessageDisplayed($mail) {
+    $this->assertNoRaw(t('The e-mail address %email is already registered. <a href="@password">Have you forgotten your password?</a>', array(
+      '%email' => $mail,
+      '@password' => url('user/password')
+    )));
+  }
+
+  private function getValidUserToRegister() {
+    return (object) array(
+      'name' => $this->randomName(),
+      'mail' => $this->generateEmail(),
+    );
+  }
+
+  protected function assertNewAccountCreated() {
+    $this->assertNotEqual($this->lastInsertedUserId, $this->getLastAddedUserId(), 'New account created');
+  }
+
+  protected function assertCheckoutCompletedWithNewAccount() {
+    $this->assertText(t('Checkout complete'));
+    $this->assertNewAccountCreated();
+  }
+
+}

@@ -1,0 +1,84 @@
+@import "compass/css3";
+/* #edit-submit--2,
+  #edit-line-item-fields-field-upload-file-und-0-upload-button,*/
+      .form-submit {
+ 	display: inline-block;
+	outline: none;
+        float:right;
+	border-radius:0.9em;
+	cursor: pointer;
+	text-decoration: none;
+	font: bold 14px/100% "Trebuchet MS", Arial, Helvetica, sans-serif;
+	overflow: hidden;
+	padding: .6em 1.9em;
+	margin: 3% 1.5%;
+         background:$logo-straw;
+         background: -moz-linear-gradient(0% 100% 90deg, #ed008c, #ff0099);
+         background: -webkit-gradient(linear, 0% 0%, 0% 100%, from (#ff0099),to (#ed008c));
+         border: 1px solid #550071;
+         -moz-box-shadow: inset 0 1px 0 0  #4c0032, 0 1px 2px 0 #550071;
+         -webkit-box-shadow: inset 0 1px 0 0  #4c0032, 0 1px 2px 0 #550071;
+         box-shadow: inset 0  0.4px 0 0  #4c0032, 0 3px 2px 0 #550071;
+	color: #fff;
+        text-shadow: 2px 2px 3px rgba(255,255,255,0.1);
+	-webkit-background-clip: padding-box;
+         &:hover {
+        color:#212121;
+        //@include transform(1, -0.4deg, 0, 0, 0deg, 0deg);
+        transition: .3s; 
+        transform: rotateY(0.2deg);
+    }
+}
+
+/* #edit-submit--2,
+#edit-line-item-fields-field-upload-file-und-0-upload-button,
+     .form-submit:hover ,
+input[type="reset"]:hover,
+input[type="submit"]:hover,
+input[type="button"]:hover{
+background-color:#999;
+  color:#111;
+
+
+}*/
+.form-submit:hover {
+   background: #ff21a4;
+        background: -moz-linear-gradient(0% 100% 90deg,  #ff21a4,  #f032a3);
+        background: -webkit-gradient(linear, 0% 0%, 0% 100%, from (#ff21a4), to( #f032a3));
+        border: 1px solid #660d41;
+        -moz-box-shadow: inset 0 1px 0 0 #660d41;
+        -webkit-box-shadow: inset 0 1px 0 0 #660d41;
+         cursor: pointer;
+        text-shadow: 0 -1px 1px #660d41;
+	-webkit-background-clip: padding-box;
+         transition: all 0.3s linear;
+}
+
+/* #edit-submit--2,
+#edit-line-item-fields-field-upload-file-und-0-upload-button,*/
+     .form-submit:active {
+            background: #ff21a4;
+        border: 1px solid #4c0931;
+        border-bottom: 1px solid #212121;
+        box-shadow: 0 0.4px 0 0 #4c0032 inset, 0 3px 2px 0 #550071;        
+    -moz-box-shadow: inset 0 3px 2px 0 #550071 ,  0 0.4px 0 0 #4c0032;
+                text-shadow: 0 -1px 1px #cc1a83;
+        -webkit-background-clip: padding-box;
+}
+
+/*  #edit-submit--2,
+     .form-submit:before {
+     background: $logo-straw;
+     height: 8%;
+     margin: 1.8em 0.9em 0.9em 0.8em;
+     width: 24%;
+}
+  #edit-submit--2,
+     .form-submit:after {
+     background: $light-straw;
+     height: 8%;
+     margin: 1.8em 0.9em 0.9em 0.8em;
+     width: 24%;
+}*/
+
+

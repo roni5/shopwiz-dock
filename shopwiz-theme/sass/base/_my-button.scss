@@ -1,0 +1,107 @@
+@import "compass/css3/transition";
+@import "compass/css3/transform";
+
+
+.cbutton, .links--inline li > a {
+    background: rgba(0, 0, 0, 0) -moz-linear-gradient(0% 100% 90deg, #ed008c, #ff0099) repeat scroll 0 0;
+    border-radius: 0.84em;
+    padding:  .5em ;
+    border: 1px solid #4c0032;
+    box-shadow: 0px 0px 1px 0 #4c0032 inset, 0px 1px 1px 0px #550071;
+    color: #fff;
+    cursor: pointer;
+    display: inline-block;
+    font: bold 14px/100% "Noto Sans",Arial,Helvetica,sans-serif;
+    margin: 10px 0;
+    outline: medium none;
+    overflow: hidden;
+    text-decoration: none;
+    text-shadow: 1px 1px 1px rgba(235, 235, 235, 0.1);
+}
+.cbutton, .links--inline li > a:hover {
+    background: rgba(0, 0, 0, 0) -moz-linear-gradient(0% 100% 90deg, #ff21a4, #ff0099) repeat scroll 0 0;
+    cursor: pointer;
+    //text-shadow: -1px -1px 0px #fff;
+	 text-shadow:1px 1px 1px #ffffff;
+    transition: all 0.3s linear 0s;
+    text-decoration: none;
+    color: white;
+}
+.cbutton:active {
+    background: #ff21a4 none repeat scroll 0 0;
+    border: 1px solid #4c0931;
+    text-shadow: 0 -1px 1px #cc1a83;
+}
+.cbutton::after {
+    float: left;
+    height: 10px;
+    margin: 0 0 0 9px;
+    outline: medium inset;
+    width: 8px;
+    text-decoration: none;
+}
+
+.mybutton , 
+   .links--inline li > a {
+        display: inline-block;
+        outline: none;
+        border-radius:0.9em;
+        cursor: pointer;
+        text-decoration: none;
+        font: bold 14px/100% "Noto Sans", Arial, Helvetica, sans-serif;
+        overflow: hidden;
+        padding: .5em 1em .5em 1em;
+        margin: 10px 0;
+        background:$logo-straw;
+        background: -moz-linear-gradient(0% 100% 90deg, #ed008c, #ff0099);
+        background: -webkit-gradient(linear, 0% 0%, 0% 100%, from (#ff0099),to (#ed008c));
+        border-top: 1px solid #550071;
+        border-right: 1px solid #4c0032;
+        border-bottom: 1px solid #4c0032;
+        border-left: 1px solid #550071;
+        -moz-box-shadow: inset 1px  1px 1px  0  #4c0032, 1px  1px 1px 0 #550071;  
+      -webkit-box-shadow: inset 1px  1px 1px  0  #4c0032, 1px  1px 1px 0 #550071;
+        box-shadow: inset 1px  1px 1px  0  #4c0032, 1px  1px 1px 0 #550071;
+         //box-shadow: inset 1px 1px 2px 0 rgba(255,255,255,0.6),
+        //inset -1px -1px 1px 0 rgba(100,120,140,0.6),1px 2px 4px 0 rgba(0,0,0,0.6);
+        color: #fff;
+        text-shadow: 1px 1px 2px rgba(255,255,255,0.1);
+        -webkit-background-clip: padding-box;
+         }
+
+.mybutton,
+ .links--inline li > a:hover {
+        background: #ff21a4;
+        background: -moz-linear-gradient(0% 100% 90deg,  #ff21a4,  #f032a3);
+        background: -webkit-gradient(linear, 0% 0%, 0% 100%, from (#ff21a4), to( #f032a3));
+        border-top: 1px soli#660d41;
+        border-right: 1px soli#660d41;
+        border-bottom: 1px soli#660d41;
+        border-left: 1px soli#660d41;
+        -moz-box-shadow: inset 0 1px 0 0 #660d41;
+        -webkit-box-shadow: inset 0 1px 0 0 #660d41;
+         cursor: pointer;
+        text-shadow: 0 -1px 1px #660d41;
+        -webkit-background-clip: padding-box;
+        //@include transition(opacity 800ms ease-in 100ms);
+        //@include transform(scale(0.99));
+        //@include transform(rotate(0.00004deg));
+        transition: all 0.3s linear;
+}
+
+.mybutton:active { 
+        background: #ff21a4;
+        border: 1px solid #4c0931;
+        border-bottom: 1px solid #4c0931;
+        -moz-box-shadow: inset 0 0 4px 2px #4c0931, 0 1px 0 0 #fff;
+                text-shadow: 0 -1px 1px #cc1a83;
+        -webkit-background-clip: padding-box;
+}
+
+.mybutton:after {
+       // content: url(images/white-rt-triangle.png);
+        width: 8px;
+        height: 10px;
+        float: right;
+        margin: 1px 0 0 10px;
+}

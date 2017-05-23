@@ -1,0 +1,28 @@
+name = Product Canvas
+description = Implementation of entity Product Canvas
+core = 7.x
+
+dependencies[] = entity
+dependencies[] = libraries
+dependencies[] = entityreference
+dependencies[] = taxonomy
+dependencies[] = commerce_cart
+
+files[] = product_canvas.module
+files[] = includes/product_canvas.class.inc
+files[] = includes/product_canvas.controller.inc
+files[] = includes/product_canvas.type.controller.inc
+files[] = includes/product_canvas.admin.inc
+files[] = includes/product_canvas_type.admin.inc
+
+libraries[product_canvas][name] = fabric
+libraries[product_canvas][description] =  Fabric library for website
+libraries[product_canvas][js][0][file] = fabric.js
+libraries[product_canvas][js][0][options][weight] = 1
+
+ //scripts[] = js/fabric.js
+ scripts[] = js/tshirtEditor.js
+ scripts[] = js/bootstrap.js
+ scripts[] = js/product_canvas_save.js
+ scripts[] = js/jquery.miniColors.min.js
+

@@ -1,0 +1,265 @@
+<?php
+
+/**
+ * Implements hook_menu().
+ */
+function commerce_cp_menu() {  
+  $items['admin/commerce/config/cart'] = array(
+    'title' => 'Cart settings',
+    'description' => 'Customize the cart form.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('commerce_cp_builder_form'),
+    'access arguments' => array('administer cart'),
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'commerce_cp.admin.inc',
+  );
+  $items['admin/commerce/config/cart/form'] = array(
+    'title' => 'Cart form',
+    'description' => 'Build your cart form.',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => 0,
+    'file' => 'commerce_cp.admin.inc',
+  );
+  $settings_form_path = variable_get('commerce_cp_settings_form_path', 'admin/commerce/config/cart/form/pane');
+  $items[$settings_form_path. '/%'] = array(
+    'title callback' => 'commerce_cp_settings_title',
+    'title arguments' => array(6),
+    'description' => 'Configure the settings for a cart pane.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('commerce_cp_settings_form', 6),
+    'access arguments' => array('administer cart'),
+    'file' => 'commerce_cp.admin.inc',
+  );
+  
+  return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function commerce_cp_permission() {
+  $permissions = array(
+    'administer cart' => array(
+      'title' => t('Administer cart'),
+      'description' => t('Configure cart settings.'),
+      'restrict access' => TRUE,
+    ),    
+  );
+
+  return $permissions;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function commerce_cp_theme() {
+  return array(
+    'commerce_cp_builder_form' => array(
+      'render element' => 'form',
+      'file' => 'commerce_cp.admin.inc',
+    ),
+  );
+}
+
+/**
+ * Implements hook_commerce_cp_info().
+ */
+function commerce_cp_commerce_cp_info() {
+  $cart_panes = commerce_cp_get_system_panes();
+  return $cart_panes;
+}
+
+/**
+ * Settings form of Summary pane 
+ */
+function commerce_cp_summary_settings_form() {  
+  $form = array();
+  
+  $cart_view = views_get_view('commerce_cart_form', TRUE);
+  $footer_items = $cart_view->display['default']->display_options['footer'];
+  $is_activated = FALSE;
+  $order_total_key = '';
+  $line_item_summary_key = '';
+  foreach ($footer_items as $footer_item_key => $footer_item) {    
+    // check if footer cart view contains Order total item
+    if ($footer_item['field'] == 'order_total') {      
+      $is_activated = TRUE;
+      $order_total_key = $footer_item_key;      
+    }
+    elseif ($footer_item['field'] == 'line_item_summary') {      
+      $is_activated = FALSE;
+      $line_item_summary_key = $footer_item_key;      
+    }
+  } 
+
+  $form['line_item_summary_key'] = array(
+    '#type' => 'value',
+    '#value' => $line_item_summary_key,
+  );
+  $form['order_total_key'] = array(
+    '#type' => 'value',
+    '#value' => $order_total_key,
+  );    
+
+  $form['cart_view'] = array(
+    '#type' => 'value',
+    '#value' => $cart_view,
+  );
+
+  $form['is_order_total_table_prev'] = array(
+    '#type' => 'value',
+    '#value' => $is_activated,
+  );
+  $form['is_order_total_table'] = array(
+    '#type' => 'checkbox',
+    '#default_value' => $is_activated,
+    '#title' => t('Order total table'),
+    '#description' => t('Activate order total table. Also it can be edited manually by updating a footer of the !cart_view', array('!cart_view' => l(t('cart view'), 'admin/structure/views/view/commerce_cart_form'))),
+  );
+  $form['#submit'][] = 'commerce_cp_summary_order_total_table_submit';
+
+  return $form;
+}
+
+/**
+ * Form submit handler. Create and remove corresponding footer element 
+ * in Cart view depending on checkbox value. 
+ * Footer elements: 
+ * 1.[Line item summary] - shows a sum of all line items (Subtotal) 
+ * in text format.
+ * 2.[Order total] - shows Subtotal, Shipping, Discounts (Coupons), 
+ * Taxes and Total in table format.
+ */
+function commerce_cp_summary_order_total_table_submit($form, $form_state) {
+  $values = $form_state['values'];  
+  $cart_view = views_get_view('commerce_cart_form', TRUE);
+  $footer_items = $cart_view->display['default']->display_options['footer'];
+  // update a view only if user switched a check box
+  if ($values['is_order_total_table'] != $values['is_order_total_table_prev']) {
+    if ($values['is_order_total_table']) {
+      // activate order total and remove line item summary      
+      if (isset($cart_view->display['default']->display_options['footer'][$values['line_item_summary_key']])) {
+        unset($cart_view->display['default']->display_options['footer'][$values['line_item_summary_key']]);
+      }
+      $cart_view->display['default']->display_options['footer']['order_total'] = array(
+        'id' => 'order_total',
+        'table' => 'commerce_order',
+        'field' => 'order_total',
+        'relationship' => 'none',
+        'group_type' => 'group',
+        'ui_name' => '',
+        'label' => '',
+        'empty' => FALSE,
+      );      
+    } else {
+      if (isset($cart_view->display['default']->display_options['footer'][$values['order_total_key']])) {
+        unset($cart_view->display['default']->display_options['footer'][$values['order_total_key']]);
+      }
+      $cart_view->display['default']->display_options['footer']['line_item_summary'] = array(
+        'id' => 'line_item_summary',
+        'table' => 'commerce_line_item',
+        'field' => 'line_item_summary',                    
+        'label' => t('Cart summary'),    
+        'info' => array(
+          'quantity' => 0,
+          'total' => 'total',
+        ),      
+      );             
+    }       
+    views_save_view($cart_view);    
+    // Clear the cache for the pager
+    $cache = $cart_view->name . ':block:results:';
+    cache_clear_all($cache, 'cache_views_data', TRUE);    
+  }
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function commerce_cp_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == 'views_form_commerce_cart_form_default') {
+    global $user;        
+    $cart_order = commerce_cart_order_load($user->uid);
+    // default weight of Summary element on cart form
+    $summary_default_value = 99;
+    $summary_weight = 0;
+    // get a list enabled panes
+    $cart_panes = variable_get('commerce_cp_panes_weight', array());
+    // get a summary weight for recalculating weight of else panes
+    if (isset($cart_panes['summary'])) {
+      $summary_weight = $cart_panes['summary'];  
+    }
+    // get a list of all panes
+    $custom_panes = module_invoke_all('commerce_cp_info');
+    // get keys of all system panes
+    $system_panes = commerce_cp_get_system_panes(TRUE);    
+    // get list of system panes that should be hidden
+    $hidden_system_panes = array_diff($system_panes, array_keys($cart_panes));
+    // hide corresponding system panes
+    foreach ($hidden_system_panes as $pane_id) {
+      if (isset($form[$pane_id])) {
+        $form[$pane_id]['#access'] = FALSE;
+      }
+    }
+    
+    // go throught all cart panes and combine them in cart form.
+    // also recalculate a weight of all panes in relation to Summary
+    // weight because Summary form element cannot be hidden and its weight
+    // is always fixed and = 99.
+    foreach ($cart_panes as $pane_id => $weight) {    
+      if ($pane_id != 'summary') {
+        // recalculate weight for all panes except Summary pane
+        $pane_weight = $summary_default_value + $weight - $summary_weight;
+        // if its system pane - just setup a weight
+        if (isset($form[$pane_id])) {
+          $form[$pane_id]['#weight'] = $pane_weight;
+        }
+        // if custom pane - execute 'pane callback' that returns a form element
+        else if (isset($custom_panes[$pane_id])) {
+          $callback = $custom_panes[$pane_id]['pane callback'];
+          if (function_exists($callback)) {
+            $form += $callback($form, $form_state, $cart_order, $pane_weight);
+          }
+        }
+      }
+    }     
+  }
+}
+
+/**
+ * Get a list of system cart panes:
+ * 1) Line items table (output)
+ * 2) Summary (Order total)
+ * 3) Submit buttons (actions)
+ *
+ * $only_keys boolean
+ */
+function commerce_cp_get_system_panes($only_keys = FALSE) {
+  $cart_panes = array();
+  $cart_panes['output'] = array(
+    'page' => 'cart',
+    'weight' => 0,
+    'name' => t('Line items table'),    
+    'system' => TRUE,
+  );
+  $cart_panes['summary'] = array(
+    'page' => 'cart',
+    'weight' => 1,
+    'warning message' => t('(cannot be disabled)'),  // cannot be disabled. only through Cart view
+    'name' => t('Summary'),    
+    'settings form' => 'commerce_cp_summary_settings_form',
+    'system' => TRUE,
+  );
+  $cart_panes['actions'] = array(
+    'page' => 'cart',
+    'weight' => 2,
+    'name' => t('Submit buttons'),    
+    'system' => TRUE,
+  );  
+
+  if ($only_keys) {
+    return array_keys($cart_panes);
+  }
+
+  return $cart_panes;
+}

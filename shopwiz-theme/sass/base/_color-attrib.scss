@@ -1,0 +1,33 @@
+.form-type-commerce-fancy-attributes .description {
+    display: inline-flex;
+    margin: 0% 2%;
+}
+.form-type-commerce-fancy-attributes-ajax .form-item {
+    //width: 20px;
+    display: inline-block;
+       width:2.275em;
+}
+
+.commerce-fancy-attributes-color  {
+    border-radius: 0.5em;
+    //box-shadow: 1px 1px 1px #fff;
+   //outline: medium outset #ccc; 0, 0%, 45%
+   //box-shadow: 0px 0px 0px 1px #249CE0 inset;
+    border: 2px solid  #fa00fa;
+    padding-left: 1.7%;
+    margin:0%;
+    height: 2.55em;
+    width:2.275em;
+}
+
+  .commerce-fancy-attributes-color:hover {
+        border: 1px solid #EB038A;
+        -moz-box-shadow: inset 0 1px 0 0 #420058;
+        -webkit-box-shadow: inset 0 1px 0 0 #420058;
+        cursor: pointer;
+        -webkit-background-clip: padding-box;
+        transition: all 0.3s linear;
+}
+
+
+

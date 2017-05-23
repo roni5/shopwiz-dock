@@ -1,0 +1,8 @@
+#edit-account-form-select{
+  display: flex;
+  justify-content: space-between;
+}
+
+#edit-account-form-select > .form-wrapper {
+  flex:0 0 49%;
+}

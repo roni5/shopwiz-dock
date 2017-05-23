@@ -1,0 +1,23 @@
+  .first leaf ,.action-links {
+  @extend %hlist;
+  margin-bottom:  0.4em;
+
+  li {
+    padding-left: 0.35em;
+    text-decoration: none;
+    a {
+      color: $tint;
+      text-decoration: none;
+
+      &:hover {
+        font-weight: 700;
+      }
+    }
+  }
+}
+
+links--inline {
+    list-style-type: none;
+    margin: 0.4em;
+    padding: 3px;
+}

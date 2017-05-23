@@ -1,0 +1,377 @@
+@import "toolkit";
+@import "compass";
+@import "breakpoint";
+@import "singularitygs";
+@import "/var/www/shopwiz.net/profiles/commerce_kickstart/themes/shopwiz/sass/variables/**/*";
+//@import "../../variables/**/*";
+@import "../../variables/_colors.scss";
+//@import "../../base/*";
+@import "compass/css3";
+//@import "compass/css3/transform-legacy";
+// Set consistent vertical and horizontal spacing units.
+$vert-spacing-unit: 16px;
+$horz-spacing-unit: 1em;
+$grid-padding: 1.250em;
+
+//max-width: 62em
+//max-width: 43.75em
+//$tab: 31.2em;//500px
+$breakpoint-to-ems: true;
+
+$desk:31.250em;
+$wide:56em;
+//$desk: 500px; 
+//$wide: 896px;
+
+$grids: 4;
+$gutters: 1/4;
+//$gutter-styles: split fixed;
+//$grids: add-grid(8 at $tab);
+//$gutters: add-gutter( 1/8 at $tab);
+$grids: add-grid(12 at $desk);
+$gutters: add-gutter( 0.25 at $desk);
+$grids: add-grid(16 at $wide);
+$gutters: add-gutter( 0.15 at $wide);
+
+
+/*
+ body {
+  background: transparent image-url('diagonal.png') left top repeat;
+} */ 
+    
+ *, *:after, *:before {
+    box-sizing:content-box ;
+}
+
+.l-constrained {
+   width: 100%;
+   margin-top: 0.1em ;
+   margin-left: 0.3em ;
+   margin-right: 0.3em ;
+   margin-bottom:-0.250em; 
+ // border:1px solid #fff;
+   @include pie-clearfix;
+   @include adjust-font-size-to(13px);
+   background-color:#ffffff;
+   //background-image: linear-gradient(#f4f4f4, #e6e6e6);
+   //background-color: rgba(255, 0, 0, 0.25);
+   // transparent; #ececec
+   }
+
+  /* NAV */
+   .l-region--navigation  {
+    @include grid-span(2, 1);
+    clear: both;
+    float: left;
+    height: auto;
+    padding: 0.5em;
+    position: static;
+    margin: 0 auto;
+   }
+
+   /* Header */
+  .l-region--header {
+   @include grid-span(3, 2);
+   //padding: $vert-spacing-unit 0;
+    margin-bottom: 0em;
+    margin-left: 0em;
+    margin-right: 0.3em;
+    //padding: 10px 4px 7px 0;
+    padding-top:0.250em;
+   
+  }
+
+  /*.l-region--branding {
+   @include grid-span(1, 1);
+  } */  
+
+   .rsvg  {
+    background: transparent url("https://shopwiz.net/profiles/commerce_kickstart/themes/shopwiz/shopwiz-new-logo-smdp4.svg") no-repeat scroll 10% 14% / contain  ;
+    display: block;
+    //margin-left: -17px;
+    //margin-top: 14%;
+    border-style:none;
+    //min-width: 90%;
+    //padding-top:3.3em;
+    //padding-bottom:1.6em; 
+    margin-left: -3px;
+    margin-top: 25px;
+    //max-width: 33%;
+    min-width: 14%;
+    padding-bottom: 0.6em;
+    padding-top: 0.3em;
+
+
+   }
+
+   .l-branding ,.l-branding site-branding{
+     @include grid-span(1, 1);
+     clear:left;
+     float:left;
+     position:relative;
+     width: 68%;
+      min-width:34px;
+      //max-width: 6.5em;
+     // width: 100%; 
+      padding-left:1%;
+      margin-left: 0.2%; 
+      margin-top: -3.9em !important;
+      z-index:3;
+      box-sizing: border-box;
+      margin-bottom: -16px;
+     }
+
+      /* .l-branding:hover {
+       transform: scale(1, 1.05);
+       transition: all 0.1s ease-out 0s;
+    } */
+   
+   .l-heading ,h1 ,h2 {
+    @include adjust-font-size-to(15px); 
+    padding: 2px 0;
+    margin: 0.513em 0.2em 0.813em;
+    box-sizing: border-box;
+    text-align: center!important;
+    width:97%;
+  }
+  
+   .l-region--navigation  {
+   // @include grid-span(2, 2);   
+    padding: $vert-spacing-unit 0.5em;
+    //postion:relative;
+   // height: auto;
+    padding:4px;   
+     box-sizing: border-box;
+ }
+
+/* Content Area */
+  .l-highlighted-wrapper {
+    padding: $vert-spacing-unit 0;
+    //background:$my-blue;
+  }
+
+.l-region--highlighted {
+  @extend .l-constrained;
+}
+
+
+   .l-main {
+     //background-color:$my-blue;
+     margin-top: 0.2125em;
+     margin-bottom: 0.7 * $vert-spacing-unit;
+     //overflow: auto;      
+   }
+
+ .l-content { 
+   @include grid-span(4, 1);
+   clear:both;
+   padding: 0.2 * $vert-spacing-unit ;
+     //overflow: auto;
+   }
+
+  #edit-name ,#edit-pass {
+   border: 1px solid #ed008c;
+   width: 190px;
+  }
+ 
+  #edit-mail {
+  border: 1px solid #ed008c;
+  width: 230px;
+  }
+
+.l-region--sidebar-second {
+  padding: $vert-spacing-unit $horz-spacing-unit;
+  margin-right: 0.9%;
+  //margin-top:  0.5%;
+ }
+
+/* Footer */ 
+  .l-footer-wrapper {
+ @include grid-span(4, 1);
+   box-sizing: border-box!important;
+} 
+  .l-region--footer {
+   @include grid-span(4, 1);
+   clear:both;
+   padding-top: $vert-spacing-unit  /3;
+   padding-bottom: $vert-spacing-unit /3 ;
+    padding-left: 0.6em ;  
+ //padding: $vert-spacing-unit $horz-spacing-unit;
+  box-sizing: border-box!important;
+  }
+
+ .l-region--footer { 
+  @extend .l-constrained;
+  box-sizing: border-box!important;
+}
+
+   .l-region--footer{
+     float:none!important;
+     box-sizing: border-box!important;
+     //@include bgimage($img_url, $colour);
+    background-image: url('data:image/gif;base64,R0lGODlhCAAIAIAAAI2aof///yH5BAAAAAAALAAAAAAIAAgAAAIIjI+pywsNQwEAOw==');
+     background-repeat:repeat;  
+}
+
+
+@include breakpoint($desk, true) {
+  .l-constrained {
+     width: 100%;
+     @include adjust-font-size-to(15px);
+  }
+ 
+   .rsvg {
+    background: transparent url("https://shopwiz.net/profiles/commerce_kickstart/themes/shopwiz/shopwiz-new-logo-smdp4.svg") no-repeat scroll 9% 47% / contain ;
+    //background-position:20% 9% ;
+    border: medium none;
+    box-shadow: unset !important;
+    //min-width: 140%;
+    //min-width: 129%;
+   //padding-bottom: 1.9em;
+    //padding-top: 4.4em;
+    //margin-left: -5%;
+     //margin-top: 28%;
+  margin-bottom: 8px;
+    margin-top: 38%;
+    min-width: 117%;
+    padding-bottom: 0.9em;
+    padding-top: 18px;
+    position: absolute;       
+}
+
+ .l-branding {
+    @include grid-span(2, 1);
+    padding-left:1.5%;
+    margin-bottom: 0.75em;
+    margin-left:1.1%;
+    max-width:6em;
+    margin-top: -4.1em;
+    box-sizing: border-box;
+  }
+
+  .l-region--header  {
+  @include grid-span(8, 3);
+      margin-bottom:0;
+  } 
+ .l-region--navigation {
+   @include grid-span(2, 11);
+     padding:10px 10px 10px;
+     box-sizing: border-box;
+   }
+
+  .l-content {
+       @include grid-span(9, 1);
+      // padding: ($vert-spacing-unit / 2) $horz-spacing-unit $vert-spacing-unit $horz-spacing-unit;
+     //padding-left: $horz-spacing-unit;
+    //padding-right: $horz-spacing-unit;
+   //padding-top: $vert-spacing-unit*1;
+     padding-bottom: $vert-spacing-unit*0.75;
+    }    
+ #edit-name ,#edit-pass {
+  width: 195px;
+  }
+ #edit-mail {
+  width: 250px;
+  }
+
+  .l-region--sidebar-second {
+     @include grid-span(3,10);
+         clear: right;
+           padding: 24px 0.1em;
+        // padding: $vert-spacing-unit $horz-spacing-unit;
+        // padding:5px 5px 5px;
+       // max-width: 150px;
+       // margin-left: 10px   
+    }
+
+
+    .l-footer-wrapper {
+      @include grid-span(12,1);
+        clear: both;
+        float:none;
+      }
+
+      .l-region--footer {
+         padding-left: 0.65em;
+      }    
+
+@include breakpoint($wide, true) {
+  .l-constrained {
+    width: 100%;
+    @include adjust-font-size-to(17px);
+  }
+
+ /* Header  */
+
+  .l-region--header {
+   @include grid-span(10, 4);
+      margin-bottom:0px;
+     // padding: $vert-spacing-unit $horz-spacing-unit;;
+     // box-sizing: border-box;
+        padding-top:0.5em;
+   }
+
+ .l-branding {
+    @include grid-span(3, 1 );
+       max-width: 8.5em;
+      // margin-bottom: 1.5em;
+      // margin-top: -1.3em;
+        padding-left:0.8%;
+        margin: -3em -27% 0.5em 1em;
+        box-sizing: border-box; 
+        padding-top:0.625em
+   }
+
+  .l-region--navigation {
+  // background-color:$my-blue;
+   @include grid-span(3, 14);
+      padding: 16px;
+   }
+
+
+ .l-content {
+  @include grid-span(12,1);
+    padding: 7px 36px 7px 28px; 
+  //background-color:#ffe5f6;
+  //padding-right: $grid-padding;
+  //padding-left: $grid-padding;
+  //padding-top: $vert-spacing-unit;
+  //padding-bottom: $vert-spacing-unit;  
+   background: #f7f7f7;
+   background: -webkit-gradient(linear, left top, left bottom, from(#fcfeff), to(#f7f7f7));
+   background: -webkit-linear-gradient(top, #fcfeff, #f7f7f7);
+   background: -moz-linear-gradient(top, #fcfeff, #f7f7f7);
+   background: -ms-linear-gradient(top, #fcfeff, #f7f7f7);
+   background: -o-linear-gradient(top, #fcfeff, #f7f7f7);
+} 
+
+#edit-name ,#edit-pass  {
+  width: 210px;
+  }
+ #edit-mail {
+  width: 290px;
+  }
+
+
+    .l-region--sidebar-second {
+          @include grid-span(4,13);
+          margin-right:-3.975em; 
+    //padding-right: $grid-padding;
+    // padding: $vert-spacing-unit $horz-spacing-unit;
+   // background-color:orange;
+          clear: right;
+      padding: 26px 26px 19px 12px;
+    }
+
+
+     .l-footer-wrapper {
+        @include grid-span(16, 1);
+          clear: both;
+          float:none;   
+       }
+               .l-region--footer {
+      }
+
+    }
+  }
+

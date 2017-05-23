@@ -1,0 +1,15 @@
+
+(function($) {
+       Drupal.behaviors.buttonHover = {
+         attach: function(context, settings){
+             $('.help').mouseover(function(){
+        $('.help').css('background-color', 'yellow');
+               });
+
+          $(".help").mouseout(function(){
+             $('.help').css('background-color', 'lightgrey');
+    });
+          }
+        };
+    })(jQuery);
+

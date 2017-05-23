@@ -1,0 +1,247 @@
+ @import "/var/www/shopwiz.net/profiles/commerce_kickstart/themes/shopwiz/sass/variables/**/*";  
+
+     .views-title {
+   border-bottom: 1px solid #a959c3;
+   vertical-align:baseline;
+   text-align:center;
+   white-space:nowrap;
+   text-shadow:0 -1px 0 rgba(0, 0, 0, 0.25);
+    box-shadow: 0 14px 28px rgba(#000, 0.25), 0 10px 10px rgba(#000, 0.22);
+  -webkit-box-shadow: 0 14px 28px rgba(#000, 0.25), 0 10px 10px rgba(#000, 0.22);
+     background-color:indigo;
+    font-size: 2.3em;
+        //margin: 66px 4px 4px -6px;
+    padding: 1px 6px;
+    border-radius: 6px;
+  }
+
+
+   hover:views-title {
+     color:#fff;
+  }   
+
+   .view-gallery view-id-gallery ,
+         .views-view-grid {
+             margin: 0 auto  0 auto; 
+    }          
+
+        .node--gallery--full ,
+                 .field__item {
+          float: left;
+          padding-right: 8px;
+       margin:4px 3px ;
+          border: 3px solid #fefefe;
+           }
+
+         
+           .field__item {
+             border: 6px solid  #ffffff;
+              padding: 4px 4px;
+      }
+
+     .node--graphics--full .field--name-field-image{
+          float: left; 
+           margin:4px 6px 6px 6px;
+          padding: 8px;
+          //width:50%;
+          border: 4px solid #EB038A;
+    }
+
+ .view-graphic-view view-id-graphic_view ,
+              .view-id-graphic_view view-display-id-page_1 ,
+                 .views-field-title {
+               margin: -4.9em 2px  2px 2px;
+              padding:5px;
+    }
+
+             .view-graphic-view .view-id-graphic_view .view-display-id-attachment_1 ,
+            .views-field-title {   
+                padding-left: 20px;
+                 margin: -4.9em 2px  2px 2px;
+      }
+
+
+    .view-gallery .view-id-gallery, .views-field-title {
+    float:left;
+    color: indigo;
+    font-size: 0.4em;
+    margin:  -68px  2px 2px 2px;
+    padding-left: 18px;
+}
+       
+        //anything greater
+  @media (min-width:31.250em) {
+    .view-graphic-view .view-id-graphic_view .view-display-id-block,
+         .views-field-title .views-title{
+           font-size: 2.1em;
+    margin: 5.8em 1px 1px 18px;
+    padding-left: 8%;
+   }
+  }
+
+     @media (max-width:31.250em) {
+    .view-graphic-view .view-id-graphic_view .view-display-id-block,
+         .views-field-title .views-title{
+                margin: 6.8em 1px 1px 26px;
+              font-size: 2.0em;
+              padding-left: 6%;
+	}
+   } 
+
+
+      @media (max-width:65.939em) {
+       .mytitle {
+    font-size: 0.9em;
+    margin:     1.0em 2px 2px 2px;
+    padding-left: 4%;
+    padding-top: 1px;
+    text-align: center;
+      }
+
+    @media (min-width:65.938em) {
+   .mytitle {
+    font-size: 0.9em;
+    margin:     1.2em 3px 3px 3px;
+    padding-left: 5%;
+    padding-top: 2px;
+    text-align: center;
+      }
+    }
+  }
+
+
+
+    /**    .mytitle {
+    font-size: 0.9em;
+     margin:     1.2em 6px 6px 72px;
+    padding-left: 10%;
+    padding-top: 2px;
+    text-align: center;
+      } */
+
+         .img-polaroid {
+        margin-top:2.6em;
+         padding:18px 16px ;
+        margin-bottom:0.5em;
+         background-color:#fff;
+         border:1px solid #ccc;border:1px solid rgba(0, 0, 0, 0.2);
+      -webkit-box-shadow:0 1px 3px rgba(0, 0, 0, 0.1);-moz-box-shadow:0 1px 3px rgba(0, 0, 0, 0.1);
+       box-shadow:0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+  .view-gallery view-id-gallery ,
+     .views-view-grid img {
+             padding:28px ;
+              background: url(../images/stack_bg.png) no-repeat;
+             background-position:center;
+             background-size: 205px  205px;
+             margin: 0 10px ;
+     }         
+/*@media (min-width:61.250em) {anything greater 
+.panel-pane pane-entity-field pane-node-body , p {
+    white-space:pre-line;
+    text-align: justify;
+    -ms-text-justify: distribute-all-lines;
+    text-justify: distribute;
+   }
+} */
+
+.panel-pane pane-entity-field pane-node-body , p {
+    white-space:pre-wrap;
+    //margin: 0.7%;
+    text-align: justify;
+    -ms-text-justify: distribute-all-lines;
+    text-justify: distribute;
+    padding-top:2%;
+   }
+
+
+.cloud-zoom-gallery-thumbs  {
+    clear: left;
+    float:left!important;
+    display: inline;
+    //flex-flow: row nowrap;
+    //text-align: justify;
+   // -ms-text-justify: distribute-all-lines;
+    //text-justify: distribute-all-lines;
+    margin-left: 0%;
+    margin-top: 2%;
+    margin-right: 0.7%;
+     margin-bottom: 2%;
+}
+   //anythink less than 
+ @media (max-width: 980px) {
+    .cloud-zoom-gallery-thumbs , .cloud-zoom cloud-zoom-processed,  #cloud-zoom  {
+    float:left!important;  
+    clear: both;
+    // margin-left: 0.7%;
+   // padding-left: 0.7%;
+    margin-top: 0.7%;
+    margin-right: 0.6%;
+  }
+}
+  .cloud-zoom-gallery-thumbs  img {
+      max-width: 100%;
+      display: inline;
+      margin: 1.5%;
+      //margin-left: 2%;
+      box-shadow: 1px 1px 1px silver;
+  }
+
+.cloud-zoom-gallery-thumbs a img {
+      //max-width: 110px;
+      border: 1px solid transparent;
+      -webkit-transition: all 0.4s ease-in-out;
+      -moz-transition:  all 0.4s ease-in-out;
+      transition: all 0.4s ease-in-out;
+    }
+
+  .cloud-zoom-gallery-thumbs img:hover {
+      border: 1px solid #00BFFF ;
+      -webkit-transform: scale(1.1);
+      -moz-transform: scale(1.1);
+      transform: scale(1.1);
+    }
+
+  a .cloud-zoom-gallery cloud-zoom-processed {
+        display: inline;
+        //*display: flex;
+       // margin: 1.5%;
+   }
+/*.panel-pane pane-entity-field pane-node-body {
+              //margin-top: 2%;
+              //padding:auto;
+                float:right;
+                clear:none;
+                 //margin-left: 1%;
+               //display:flex;
+               //flex-flow: row nowrap;
+  }*/
+
+/*.node__content {
+       float:right;
+       clear:none;
+       margin-left: 2%;
+      //padding:auto;
+ .taxonomy-term__content */
+
+ .taxonomy-term--colours , .taxonomy-term--add-to-cart-form taxonomy-term--colours--add-to-cart-form {
+   position:relative;  
+   display: inline-block!important;
+   float: left!important;
+   padding: 0.45em;
+  }
+
+ /** @media (max-width: 980px) {
+   .node__content node__content , .panel-pane pane-entity-field pane-node-body , attribute-widgets {
+     float:left;
+     clear: both;
+  }
+} */
+
+ #wrap {
+    position: relative;
+    margin:1.6%;
+    display:inline-block;
+    top:-5px;
+}
+

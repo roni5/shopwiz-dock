@@ -1,0 +1,101 @@
+<?php
+
+/**
+ * @file
+ * Contains tests for the user login functionality.
+ */
+
+/**
+ * Checkout login test class.
+ */
+class CommerceCheckoutLoginUserLoginTest extends CommerceCheckoutLoginTestBase {
+
+  /**
+   * @return array
+   */
+  public static function getInfo() {
+    return array(
+      'name' => 'Commerce checkout login User login',
+      'description' => 'Ensure users with a pre-existing account can login during checkout.',
+      'group' => 'Drupal Commerce (Checkout login)',
+    );
+  }
+
+  public function setUp() {
+    parent::setUp();
+
+    $this->startCheckoutProcess();
+  }
+
+  protected function testLoginPaneContainsRequestPasswordLink() {
+    $this->assertLink(t('Request new password'), 1);
+  }
+
+  protected function testInvalidEmailIsRejectedDuringLogin() {
+    $mail = 'invalid@email,test';
+    $this->postLoginForm($mail, $this->randomString());
+
+    $this->assertInvalidEmailMessageDisplayed($mail);
+  }
+
+  protected function testUnknownEmailIsRejectedDuringLogin() {
+    $mail = $this->generateEmail();
+    $this->postLoginForm($mail, $this->randomString());
+
+    $this->assertUnknownEmailOrPasswordMessage($mail);
+  }
+
+  protected function testUnknownPasswordIsRejectedDuringLogin() {
+    $mail = $this->storeCustomerAccount->mail;
+    $this->postLoginForm($mail, $this->randomString());
+    $this->assertUnknownEmailOrPasswordMessage($mail);
+  }
+
+  protected function testSuccessfulLoginAndCheckout() {
+    $this->postValidUserLogin();
+    $this->continueToReview($this->storeCustomerAccount);
+    $this->CompleteCheckout();
+
+    $this->assertCheckoutWasCompletedWithoutCreatingNewAccount();
+  }
+
+  protected function testAccountInformationPaneCanBeEnabled() {
+    $this->enableAccountInformationPane();
+
+    $this->postValidUserLogin();
+
+    $this->assertAccountInformationIsDisplayedWithLabel($this->storeCustomerAccount);
+  }
+
+  protected function testAccountInformationPaneCanBeDisabled() {
+    $this->disableAccountInformationPane();
+
+    $this->postValidUserLogin();
+
+    $this->assertNoAccountInformationDisplayed();
+  }
+
+  /**
+   * @param $mail
+   * @param $pass
+   */
+  protected function postLoginForm($mail, $pass) {
+    $edit = array(
+      'account_form[select][login][mail]' => $mail,
+      'account_form[select][login][password]' => $pass,
+    );
+    $this->drupalPost(NULL, $edit, t('Login & checkout'));
+  }
+
+  protected function postValidUserLogin() {
+    $this->postLoginForm($this->storeCustomerAccount->mail, $this->storeCustomerAccount->pass_raw);
+  }
+
+  /**
+   * @param $mail
+   */
+  protected function assertUnknownEmailOrPasswordMessage($mail) {
+    $replacement = array('@password' => url('user/password', array('query' => array('name' => $mail))));
+    $this->assertRaw(t('Sorry, unrecognized e-mail address or password. <a href="@password">Have you forgotten your password?</a>', $replacement));
+  }
+}

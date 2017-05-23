@@ -1,0 +1,19 @@
+
+(function($) {
+       Drupal.behaviors.buttonFont = {
+         attach: function(context, settings){
+         function setFont(font){
+      var activeObject = canvas.getActiveObject();
+        if (activeObject && activeObject.type === 'text') {
+             activeObject.fontFamily = font;
+	        canvas.renderAll();
+	      }
+   }
+           $('#texteditor' , context).on( 'keyup change', setFont); 
+              //setFont(font);
+            //alert("you clicked ");
+
+          }
+        };
+    })(jQuery);
+

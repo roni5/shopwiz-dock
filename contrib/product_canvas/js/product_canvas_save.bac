@@ -1,0 +1,38 @@
+(function ($) {
+
+Drupal.behaviors.product_canvas_save = {
+    attach: function (context, settings) {
+        jQuery('#product-canvas-save').bind('click', function() {
+
+         var canvas = document.getElementById("tcanvas");
+				var image = new Image();
+                               image.src = canvas.toDataURL();
+var data = {
+  "file":{
+    "file":image ,
+    "filename":"image.png",
+     "filepath": "public://image.png" ,
+  }
+};
+
+
+
+
+                                 
+options = {
+  type:"post",
+  data:data,
+  url: Drupal.settings.basePath + 'canvas/file.json',
+  dataType: 'json',
+  success:function(result){
+    console.log(JSON.stringify(result));
+  }
+};
+$.ajax(options);
+
+                //document.getElementById("canvasImg").src = canvas.toDataURL();
+               //alert('OK');
+        });
+    }
+};
+})(jQuery);

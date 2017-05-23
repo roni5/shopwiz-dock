@@ -1,0 +1,34 @@
+/**
+ * There isn't much to place in here, but if there is
+ * special media treatment on the site place it here
+ */
+iframe {
+  max-width: 100%;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+@mixin responsive-iframe-wrapper {
+  position: relative;
+  // This is the ratio of the width to keep the proportions of the video
+  padding-bottom: 56.25%;
+  padding-top: 30px;
+  height: 0;
+  overflow: hidden;
+  iframe, object, embed {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.embedded-video {
+  .player {
+    @include responsive-iframe-wrapper;
+  }
+}
+

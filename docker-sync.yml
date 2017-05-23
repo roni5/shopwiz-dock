@@ -1,0 +1,14 @@
+version: "2"
+
+syncs:
+  docker-sync-unison:
+    src: './shopwiz'
+    sync_strategy: 'unison'
+#    dest: '/var/www/html/web'
+    sync_userid: '82'
+    sync_excludes: ['.gitignore', '.git/', '.idea/']
+#  docker-sync-unison-another-project:
+#    src: '/absolute/path/to/project/codebase'
+#    dest: '/var/www/html'
+#    sync_userid: '82'
+#    sync_excludes: ['.gitignore', '.git/', '.idea/']

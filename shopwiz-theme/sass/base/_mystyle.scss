@@ -1,0 +1,7 @@
+ .mystyle {
+   background-color: CornflowerBlue;
+}
+.mystyle:hover {
+   transition: background-color 1s linear;
+  background-color: LightskyBlue;
+}

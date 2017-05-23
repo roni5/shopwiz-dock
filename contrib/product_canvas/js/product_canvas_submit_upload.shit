@@ -1,0 +1,11 @@
+(function ($) {
+  Drupal.behaviors.product_canvas = {
+    attach: function (context, settings) {
+   $('.pane-content').mouseover(function() {
+               //e.preventDefault();
+              alert("Now click image to send to editor");
+                        //$(this).removeClass("hidden");
+      }); 
+    }
+  };
+})(jQuery);

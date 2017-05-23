@@ -1,0 +1,26 @@
+(function ($) {
+  Drupal.behaviors.product_canvas = {
+         attach: function (context, settings) {
+          $('#product-canvas-save', context).click(function(){
+              alert('testing');
+         alert(settings.product_canvas.canvasNid);     
+          //var dataURL = document.getElementById("tcanvas").toDataURL();   
+           var canvData = document.getElementById('tcanvas').toDataURL();
+
+            var request = $.ajax({
+        type: "POST",   
+        //url: "/product_canvas/"+Drupal.settings.product_canvas.canvasNid+"/canvas-save",
+        url: /product_canvas/'+Drupal.settings.basePath.product_canvas.canvasNid+'/canvas-save',
+         data: {imagedata: canvData},
+        success: function(data, text_status) {
+   //this would be a good place to handle errors from the save page, 
+   //for now we reload the current page, which refreshes with our saved icon
+          location.reload();
+        }
+      });
+
+    });
+   }
+  };
+
+})(jQuery);

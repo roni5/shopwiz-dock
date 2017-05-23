@@ -1,0 +1,13 @@
+(function($) {
+       Drupal.behaviors.submitUpload = {
+         attach: function(context, settings){
+             $('p').mouseover(function(){
+        $('p').css('background-color', 'yellow');
+               });
+
+          $("p").mouseout(function(){
+        $("p").delay(9999.css("background-color", "lightgray");
+    });
+          }
+        };
+    })(jQuery);

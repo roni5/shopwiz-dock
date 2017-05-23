@@ -1,0 +1,40 @@
+img, media {
+  max-width: 100%;
+  height: auto;
+  vertical-align: top;
+  outline: medium none;
+}
+
+img {
+    border: 0 none;
+}
+
+.flex-active-slide img {
+     box-shadow:none !important;
+}
+
+.rsvg  img {
+    //max-width: 100%;
+    box-shadow: none !important;
+    border:none;
+}
+
+/*.cloud-zoom-gallery-thumbs  img {
+      max-width: 110px;
+      //margin-right: 2%;
+      box-shadow: 1px 1px 1px silver;
+}*/
+
+/*.cloud-zoom-gallery-thumbs a img {
+      //max-width: 110px;
+      border: 1px solid transparent;
+      -webkit-transition: all 0.4s ease-in-out;
+      -moz-transition:  all 0.4s ease-in-out;
+      transition: all 0.4s ease-in-out;
+    }*/
+  /*.cloud-zoom-gallery-thumbs img:hover {
+      border: 1px solid $light-blue;
+      -webkit-transform: scale(1.1);
+      -moz-transform: scale(1.1);
+      transform: scale(1.1);
+    }*/

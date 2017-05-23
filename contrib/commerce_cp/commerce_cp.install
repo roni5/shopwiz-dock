@@ -1,0 +1,19 @@
+<?php
+
+/**
+ * Implements hook_install().
+ */
+function commerce_cp_install() {
+	$panes = commerce_cp_get_system_panes();
+	$panes['output'] = $panes['output']['weight'];
+	$panes['summary'] = $panes['summary']['weight'];
+	$panes['actions'] = $panes['actions']['weight'];
+  variable_set('commerce_cp_panes_weight', $panes);
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function commerce_cp_uninstall() {
+  variable_del('commerce_cp_panes_weight');
+}
