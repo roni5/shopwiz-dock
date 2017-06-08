@@ -45,7 +45,7 @@ services:
       - ./shopwiz-theme/:/var/www/html/web/profiles/commerce_kickstart/themes/contrib/shopwiz:rw
       - ./contrib/:/var/www/html/web/profiles/commerce_kickstart/modules/contrib:rw
       - ./libraries/:/var/www/html/web/sites/all/libraries:rw
-#      - ./shopwiz/:/var/www/html/web
+#      - ./shopwiz/:/var/www/html/web/shopwiz:rw
   nginx:
 # wodby/drupal-nginx:[DRUPAL_VERSION]-[NGINX_VERSION]-[STABILITY_TAG].
 #    image: wodby/drupal-nginx:8-1.10-2.1.0
